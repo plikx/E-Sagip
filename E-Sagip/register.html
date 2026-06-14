@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Sagip – Volunteer Registration</title>
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="reg-topbar">
+    <button class="back-btn" onclick="goBack()" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <div class="reg-topbar-title">
+      <h2>Volunteer Registration</h2>
+      <p>Barangay 628 BDRRMC · Sta. Mesa, Manila</p>
+    </div>
+    <div class="reg-topbar-spacer"></div>
+    <div class="reg-topbar-dots">
+      <span id="dot-1" class="active"></span>
+      <span id="dot-2"></span>
+      <span id="dot-3"></span>
+    </div>
+  </div>
+
+  <!-- Step Indicators -->
+  <div class="reg-steps">
+    <div class="reg-step">
+      <div class="step-circle active" id="sc-1">1</div>
+      <div class="step-label active" id="sl-1">Personal Info</div>
+    </div>
+    <div class="step-connector" id="conn-1"></div>
+    <div class="reg-step">
+      <div class="step-circle" id="sc-2">2</div>
+      <div class="step-label" id="sl-2">Skills</div>
+    </div>
+    <div class="step-connector" id="conn-2"></div>
+    <div class="reg-step">
+      <div class="step-circle" id="sc-3">3</div>
+      <div class="step-label" id="sl-3">Account</div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 1: PERSONAL INFO ===== -->
+  <div class="reg-step-panel active" id="panel-1">
+    <div class="reg-card">
+      <h2>Personal Information</h2>
+
+      <div class="reg-row">
+        <div class="form-group">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" id="fname" placeholder="Juan" />
+        </div>
+        <div class="form-group">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" id="lname" placeholder="dela Cruz" />
+        </div>
+      </div>
+
+      <div class="reg-row">
+        <div class="form-group">
+          <label>Birthdate <span class="req">*</span></label>
+          <input type="date" id="birthdate" />
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="" disabled selected></option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Physical Capabilities
+        </label>
+        <select id="capabilities">
+          <option value="" disabled selected>Select Capabilities</option>
+          <option>Full mobility</option>
+          <option>Limited mobility</option>
+          <option>Requires assistance</option>
+          <option>Physically disabled</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Home Address in Brgy. 628
+        </label>
+        <input type="text" id="address" placeholder="House No., Street, Purok, Brgy. 628, Sta. Mesa" />
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Contact Number <span class="req">*</span>
+        </label>
+        <input type="tel" id="contact" placeholder="09XXXXXXXXX" maxlength="11" />
+      </div>
+
+      <div class="form-group">
+        <label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email Address <span class="req">*</span>
+        </label>
+        <input type="email" id="email" placeholder="juan@email.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Emergency Contact <span style="color:var(--text-muted);font-weight:400;">(Optional)</span></label>
+        <div class="emergency-row">
+          <input type="text" id="ec-name" placeholder="Contact name" />
+          <input type="tel" id="ec-num" placeholder="09XXXXXXXXX" maxlength="11" />
+        </div>
+      </div>
+
+      <button class="btn-next" onclick="goToStep(2)">
+        Next: Select Skills
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2: SKILLS ===== -->
+  <div class="reg-step-panel" id="panel-2">
+    <div class="reg-card">
+      <h2>Skills & Capabilities</h2>
+      <p class="reg-subtitle">Select all skills that apply. These will be verified by the BDRRMC Coordinator during orientation.</p>
+
+      <!-- Logistics & Relief Operations -->
+      <div class="skill-category">
+        <div class="skill-cat-header" onclick="toggleCategory(this)">
+          <div class="skill-cat-header-left">
+            <div class="skill-cat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            </div>
+            <div class="skill-cat-titles">
+              <h4 class="logistich4">Logistics & Relief Operations</h4>
+              <p class="light">Light Work</p>
+            </div>
+          </div>
+          <div class="skill-cat-chevron open">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="skill-cat-body open">
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Relief Goods Packing" onchange="updateSummary()" /> Relief Goods Packing</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Donation Sorting" onchange="updateSummary()" /> Donation Sorting</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Inventory & Listing" onchange="updateSummary()" /> Inventory &amp; Listing</label>
+        </div>
+      </div>
+
+      <!-- Physical Labor -->
+      <div class="skill-category">
+        <div class="skill-cat-header" onclick="toggleCategory(this)">
+          <div class="skill-cat-header-left">
+            <div class="skill-cat-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></svg>
+            </div>
+            <div class="skill-cat-titles">
+              <h4 class="physicalh4">Physical Labor & Clean-Up</h4>
+              <p class="heavy">Heavy Work</p>
+            </div>
+          </div>
+          <div class="skill-cat-chevron open">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="skill-cat-body open">
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Debris Clearing & Heavy Lifting" onchange="updateSummary()" /> Debris Clearing &amp; Heavy Lifting</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Mud Clearing & Sweeping" onchange="updateSummary()" /> Mud Clearing &amp; Sweeping</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Basic Carpentry" onchange="updateSummary()" /> Basic Carpentry</label>
+        </div>
+      </div>
+
+      <!-- Community Support -->
+      <div class="skill-category">
+        <div class="skill-cat-header" onclick="toggleCategory(this)">
+          <div class="skill-cat-header-left">
+            <div class="skill-cat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="skill-cat-titles">
+              <h4 class="communityh4">Community Support & Welfare</h4>
+              <p class="general">General Help</p>
+            </div>
+          </div>
+          <div class="skill-cat-chevron open">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="skill-cat-body open">
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Community Kitchen / Cooking" onchange="updateSummary()" /> Community Kitchen / Cooking</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Crowd Control & Ushering" onchange="updateSummary()" /> Crowd Control &amp; Ushering</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Child & Elderly Care" onchange="updateSummary()" /> Child &amp; Elderly Care</label>
+        </div>
+      </div>
+
+      <!-- Medical -->
+      <div class="skill-category">
+        <div class="skill-cat-header" onclick="toggleCategory(this)">
+          <div class="skill-cat-header-left">
+            <div class="skill-cat-icon red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            </div>
+            <div class="skill-cat-titles">
+              <h4 class="healthh4">Medical & First Aid</h4>
+              <p class="medical">Medical</p>
+            </div>
+          </div>
+          <div class="skill-cat-chevron open">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="skill-cat-body open">
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Basic First Aid / CPR" onchange="updateSummary()" /> Basic First Aid / CPR</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Medical Professional" onchange="updateSummary()" /> Medical Professional</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Psychological First Aid" onchange="updateSummary()" /> Psychological First Aid</label>
+        </div>
+      </div>
+
+      <!-- Technical -->
+      <div class="skill-category">
+        <div class="skill-cat-header" onclick="toggleCategory(this)">
+          <div class="skill-cat-header-left">
+            <div class="skill-cat-icon violet">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            </div>
+            <div class="skill-cat-titles">
+              <h4 class="techh4">Transport & Technical</h4>
+              <p class="tech">Specialized</p>
+            </div>
+          </div>
+          <div class="skill-cat-chevron open">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="skill-cat-body open">
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Driver (4-Wheel / Truck / Van)" onchange="updateSummary()" /> Driver (4-Wheel / Truck / Van)</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Basic Electrical / Wiring Safety" onchange="updateSummary()" /> Basic Electrical / Wiring Safety</label>
+          <label class="skill-checkbox"><input type="checkbox" name="skill" value="Boat / Bangka Operator" onchange="updateSummary()" /> Boat / Bangka Operator</label>
+        </div>
+      </div>
+
+       <div class="reg-disclaimer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <p><strong>Volunteer Disclaimer</strong><br/>By registering, you acknowledge the physical risks of disaster response and agree to follow BDRRMC protocols and the Volunteer Code of Conduct.</p>
+      </div>
+      <div class="step2-buttons">
+      <button class="btn-backS1" onclick="backtoS1()">
+        ←Back
+      </button>
+
+      <button class="btn-next" onclick="goToStep(3)">
+        Setup Account →
+      </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3: ACCOUNT ===== -->
+  <div class="reg-step-panel" id="panel-3">
+    <div class="reg-card">
+      <h2>Account & Security Setup</h2>
+
+      <div class="form-group">
+        <label>Security Question <span class="req">*</span></label>
+        <select id="sec-question">
+          <option value="" disabled selected></option>
+          <option>What is your mother's maiden name?</option>
+          <option>What is the name of your first pet?</option>
+          <option>What is your elementary school's name?</option>
+          <option>What is your favorite childhood food?</option>
+          <option>What is the name of the street you grew up on?</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Security Answer <span class="req">*</span></label>
+        <input type="text" id="sec-answer" placeholder="Your answer (case insensitive)" />
+      </div>
+
+      <div class="form-group">
+        <label>Password <span class="req">*</span></label>
+        <input type="password" id="reg-password" placeholder="Minimum 6 characters" minlength="6" />
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password <span class="req">*</span></label>
+        <input type="password" id="reg-confirm" placeholder="Repeat your password" />
+      </div>
+
+      <!-- Registration Summary -->
+      <div class="reg-summary" id="reg-summary">
+        <h4>Registration Summary</h4>
+        <div class="reg-summary-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="sum-name">—</span>
+        </div>
+        <div class="reg-summary-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span id="sum-email">—</span>
+        </div>
+        <div class="reg-summary-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="sum-contact">—</span>
+        </div>
+        <div class="reg-summary-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span id="sum-skills">0 skills selected</span>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="reg-disclaimer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <p><strong>Volunteer Disclaimer</strong><br/>By registering, you acknowledge the physical risks of disaster response and agree to follow BDRRMC protocols and the Volunteer Code of Conduct.</p>
+      </div>
+
+      <button class="btn-next green" onclick="completeRegistration()">
+        ✅ Complete Registration
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== SUCCESS ===== -->
+  <div class="reg-success" id="reg-success">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h2>Registration Submitted!</h2>
+    <p>Your volunteer application has been received. The BDRRMC Coordinator will verify your details and contact you via email.</p>
+    <button class="btn-back-login" onclick="window.location.href='index.html'">Back to Sign In</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
