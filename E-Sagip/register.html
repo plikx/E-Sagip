@@ -91,23 +91,25 @@
         </select>
 
         <div class="address-div1">
-
-        <label>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Home Address in Brgy. 628
-        </label>
-        <input type="text" placeholder="House No.,Street, Purok,Brgy. 628, Sta. Mesa">
-
+          <div class="address-label-container">
+            <label for="resident-address">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Home Address in Brgy. 628
+            </label>
+            <span class="req">*</span>
+          </div>
+          <input type="text" id="resident-address" placeholder="House No., Street, Purok, Brgy. 628, Sta. Mesa">
         </div>
 
-         <div class="address-div2">
-
-        <label>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-           Where are you from?
-        </label>
-        <input type="text" placeholder="House No.,Street, Purok,Brgy, Municipality/City">
-
+        <div class="address-div2">
+          <div class="address-label-container">
+            <label for="outside-address">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Where are you from?
+            </label>
+            <span class="req">*</span>
+          </div>
+          <input type="text" id="outside-address" placeholder="Brgy 425">
         </div>
       </div>
 
