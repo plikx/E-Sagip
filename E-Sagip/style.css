@@ -219,6 +219,28 @@ a {
   height: 16px;
 }
 
+.address-label-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.address-label-container label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.address-label-container .req {
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  margin-top: 0;
+}
+
 /* Sign In Button */
 .btn-signin {
   width: 100%;
