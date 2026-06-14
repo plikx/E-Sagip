@@ -181,7 +181,7 @@ function updateStepUI(step) {
 
     if (i < step) {
       circle.classList.add('done');
-      circle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>`;
+      circle.innerHTML = "✓";
     } else if (i === step) {
       circle.classList.add('active');
       circle.textContent = i;
