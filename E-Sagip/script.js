@@ -222,6 +222,30 @@ function backtoS1() {
 }
 
 /**
+ * Show the correct address field based on resident selection.
+ */
+function toggleResidentAddressFields() {
+  const resident = document.getElementById('resident')?.value;
+  const div1 = document.querySelector('.address-div1');
+  const div2 = document.querySelector('.address-div2');
+  if (!div1 || !div2) return;
+
+  const showDiv1 = resident === 'yes';
+  const showDiv2 = resident === 'no';
+
+  div1.classList.toggle('active', showDiv1);
+  div2.classList.toggle('active', showDiv2);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const residentSelect = document.getElementById('resident');
+  if (!residentSelect) return;
+
+  residentSelect.addEventListener('change', toggleResidentAddressFields);
+  toggleResidentAddressFields();
+});
+
+/**
  * Toggle a skill category accordion.
  */
 function toggleCategory(headerEl) {
