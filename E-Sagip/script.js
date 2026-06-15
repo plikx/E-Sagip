@@ -145,14 +145,28 @@ function goToStep(step) {
     // Validate step 1 required fields
     const fname   = document.getElementById('fname')?.value.trim();
     const lname   = document.getElementById('lname')?.value.trim();
+    const birthdate = document.getElementById('birthdate')?.value;
     const contact = document.getElementById('contact')?.value.trim();
     const email   = document.getElementById('email')?.value.trim();
     const resident = document.getElementById('resident')?.value;
     const residentAddress = document.getElementById('resident-address')?.value.trim();
     const outsideAddress  = document.getElementById('outside-address')?.value.trim();
 
-    if (!fname || !lname || !contact || !email || !resident) {
-      alert('Please fill in all required fields (First Name, Last Name, Contact Number, Email, and residency confirmation).');
+    if (!fname || !lname || !birthdate || !contact || !email || !resident) {
+      alert('Please fill in all required fields (First Name, Last Name, Birthdate, Contact Number, Email, and residency confirmation).');
+      return;
+    }
+
+    const birth = new Date(birthdate);
+    const today = new Date();
+    const age = today.getFullYear() - birth.getFullYear() - (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0);
+
+    if (age < 18) {
+      alert('You must be at least 18 years old to register.');
+      return;
+    }
+    if (age > 120) {
+      alert('Please enter a valid birthdate. Age cannot be greater than 120 years.');
       return;
     }
 
@@ -166,6 +180,11 @@ function goToStep(step) {
     }
   }
   if (step === 3) {
+    const skillSelection = document.querySelectorAll('input[name="skill"]:checked');
+    if (skillSelection.length === 0) {
+      alert('Please select at least one skill before continuing.');
+      return;
+    }
     updateSummary();
   }
 
@@ -259,10 +278,41 @@ function toggleResidentAddressFields() {
 
 document.addEventListener('DOMContentLoaded', () => {
   const residentSelect = document.getElementById('resident');
-  if (!residentSelect) return;
-
-  residentSelect.addEventListener('change', toggleResidentAddressFields);
+  if (residentSelect) {
+    residentSelect.addEventListener('change', toggleResidentAddressFields);
+  }
   toggleResidentAddressFields();
+
+  const registrationForm = document.getElementById('registration-form');
+  if (registrationForm) {
+    registrationForm.addEventListener('submit', event => {
+      event.preventDefault();
+      if (currentStep === 3) {
+        completeRegistration();
+      } else if (currentStep === 1) {
+        goToStep(2);
+      } else if (currentStep === 2) {
+        goToStep(3);
+      }
+    });
+  }
+
+  const birthdateInput = document.getElementById('birthdate');
+  if (birthdateInput) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    birthdateInput.max = `${yyyy}-${mm}-${dd}`;
+  }
+
+  const othersCheckbox = document.getElementById('skill-others');
+  const othersDiv = document.getElementById('others-div');
+  if (othersCheckbox && othersDiv) {
+    othersCheckbox.addEventListener('change', () => {
+      othersDiv.classList.toggle('hidden', !othersCheckbox.checked);
+    });
+  }
 });
 
 /**
