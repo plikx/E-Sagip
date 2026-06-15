@@ -143,7 +143,7 @@
     </div>
 
     <!-- Active Operations -->
-     <!--DELETE NA LANG 'TO PAG GUMAGANA NA UNG PAG DEPLOY NG NEW OPERATION, SAMPLE LANG NAMAN-->
+    <!--------Sample-------->
     <div class="section-title">Active Operations</div>
     <div class="operations-list">
 
@@ -159,6 +159,7 @@
             </span>
           </span>
         </div>
+        <div class="meta-container">
         <div class="op-meta">
           <span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -175,11 +176,15 @@
             June 10, 2026 · 7:00 AM
           </span>
         </div>
+        <div class="comp-container">
+          <button id="complete" class="complete" onclick="complete()">Complete</button>
+        </div>
+        </div>
         <div class="op-progress-bar"><div class="op-progress-fill" style="width:0%"></div></div>
         <div class="op-details">
           <p>Enrolled volunteers:</p>
           <div class="volunteer-tags">
-            <span class="vtag">Volunteer Sample</span>
+            <span class="vtag">Volunteer Name</span>
           </div>
         </div>
       </div>
@@ -248,6 +253,14 @@
           <label><input type="checkbox" value="Driver (4-Wheel / Truck / Van)"><span class="skill-tag">Driver (4-Wheel / Truck / Van)</span></label>
           <label><input type="checkbox" value="Basic Electrical / Wiring Safety"><span class="skill-tag">Basic Electrical / Wiring Safety</span></label>
           <label><input type="checkbox" value="Boat / Bangka Operator"><span class="skill-tag">Boat / Bangka Operator</span></label>
+          <label>
+            <input type="checkbox" value="Others" name="skill" id="skill-others" class="others" />
+            <span class="skill-tag">Others: Please Specify</span>
+          </label>
+          <div class="others-div hidden" id="others-div">
+            <label for="other-skill">Please describe other required skills:</label>
+            <textarea id="other-skill" class="other-skill" placeholder="Enter other skills here"></textarea>
+          </div>
         </div>
       </div>
       <button class="btn-deploy" onclick="handleDeployOp()">🚀Deploy Operation</button>
@@ -282,11 +295,11 @@
     
     <div class="vol-list" id="vol-list">
 
-      <div class="vol-card" data-skills="Basic First Aid / CPR,Medical Professional">
+      <div class="vol-card">
         <div class="vol-avatar">MS</div>
         <div class="vol-info">
           <div class="vol-name">Maria Santos <span class="vol-badge active">active</span></div>
-          <div class="vol-meta">Purok 2, Brgy. 628 &nbsp;·&nbsp; 09171234567</div>
+          <div class="vol-meta">Purok 2, Brgy. 628 · 09171234567</div>
           <div class="vol-skills-row">
             <span class="vstag">Basic First Aid / CPR</span>
             <span class="vstag">Medical Professional</span>
