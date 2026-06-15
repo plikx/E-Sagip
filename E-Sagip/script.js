@@ -142,7 +142,7 @@ let currentStep = 1;
  */
 function goToStep(step) {
   if (step === 2) {
-    // Validate step 1 required fields
+
     const fname   = document.getElementById('fname')?.value.trim();
     const lname   = document.getElementById('lname')?.value.trim();
     const birthdate = document.getElementById('birthdate')?.value;
@@ -154,6 +154,13 @@ function goToStep(step) {
 
     if (!fname || !lname || !birthdate || !contact || !email || !resident) {
       alert('Please fill in all required fields (First Name, Last Name, Birthdate, Contact Number, Email, and residency confirmation).');
+      return;
+    }
+
+    // Email validity check
+    if (!email.endsWith('@gmail.com')) {
+      alert('Email must be a @gmail.com address.');
+      document.getElementById('email').focus();
       return;
     }
 
@@ -179,6 +186,7 @@ function goToStep(step) {
       return;
     }
   }
+
   if (step === 3) {
     const skillSelection = document.querySelectorAll('input[name="skill"]:checked');
     if (skillSelection.length === 0) {
@@ -196,6 +204,152 @@ function goToStep(step) {
   updateStepUI(step);
   window.scrollTo(0, 0);
 }
+
+/**
+ * Can't input numbers and special characters in first name, last name and emergency contact name
+ */
+
+ const fname = document.getElementById('fname');
+
+    fname.addEventListener('keydown', (e) => {
+      const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' '];
+      if (allowedKeys.includes(e.key)) return;
+
+  
+      if (!/^[a-zA-Z\s]$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+
+    fname.addEventListener('paste', (e) => {
+      const pasted = e.clipboardData.getData('text');
+      if (/[^a-zA-Z\s]/.test(pasted)) {
+        e.preventDefault();
+      }
+    });
+
+    fname.addEventListener('drop', (e) => {
+      const dropped = e.dataTransfer.getData('text');
+      if (/[^a-zA-Z\s]/.test(dropped)) {
+        e.preventDefault();
+      }
+    });
+
+     const lname = document.getElementById('lname');
+
+    lname.addEventListener('keydown', (e) => {
+      const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' '];
+      if (allowedKeys.includes(e.key)) return;
+
+   
+      if (!/^[a-zA-Z\s]$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+  
+    lname.addEventListener('paste', (e) => {
+      const pasted = e.clipboardData.getData('text');
+      if (/[^a-zA-Z\s]/.test(pasted)) {
+        e.preventDefault();
+      }
+    });
+
+  
+    lname.addEventListener('drop', (e) => {
+      const dropped = e.dataTransfer.getData('text');
+      if (/[^a-zA-Z\s]/.test(dropped)) {
+        e.preventDefault();
+      }
+    });
+
+    const ename = document.getElementById('ec-name');
+
+    ename.addEventListener('keydown', (e) => {
+      const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' '];
+      if (allowedKeys.includes(e.key)) return;
+
+   
+      if (!/^[a-zA-Z\s]$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+  
+    ename.addEventListener('paste', (e) => {
+      const pasted = e.clipboardData.getData('text');
+      if (/[^a-zA-Z\s]/.test(pasted)) {
+        e.preventDefault();
+      }
+    });
+
+  
+    ename.addEventListener('drop', (e) => {
+      const dropped = e.dataTransfer.getData('text');
+      if (/[^a-zA-Z\s]/.test(dropped)) {
+        e.preventDefault();
+      }
+    });
+
+    /**
+ * Can't input text and special characters in contact num and emergency contact
+ */
+     const contact = document.getElementById('contact');
+
+
+  contact.addEventListener('keydown', (e) => {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
+    if (allowedKeys.includes(e.key)) return;
+
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  
+  contact.addEventListener('paste', (e) => {
+    const pasted = e.clipboardData.getData('text');
+    if (/[^0-9]/.test(pasted)) {
+      e.preventDefault();
+    }
+  });
+
+  
+  contact.addEventListener('drop', (e) => {
+    const dropped = e.dataTransfer.getData('text');
+    if (/[^0-9]/.test(dropped)) {
+      e.preventDefault();
+    }
+  });
+
+  const emnum = document.getElementById('ec-num');
+
+
+  emnum.addEventListener('keydown', (e) => {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
+    if (allowedKeys.includes(e.key)) return;
+
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  
+  emnum.addEventListener('paste', (e) => {
+    const pasted = e.clipboardData.getData('text');
+    if (/[^0-9]/.test(pasted)) {
+      e.preventDefault();
+    }
+  });
+
+  
+  emnum.addEventListener('drop', (e) => {
+    const dropped = e.dataTransfer.getData('text');
+    if (/[^0-9]/.test(dropped)) {
+      e.preventDefault();
+    }
+  });
 
 /**
  * Update step circles, labels, connectors, and topbar dots.
