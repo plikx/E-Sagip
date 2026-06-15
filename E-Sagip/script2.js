@@ -159,4 +159,187 @@ document.addEventListener('DOMContentLoaded', () => {
   // Existing DOMContentLoaded listeners are defined earlier in the file;
   // this one handles only the map, which is safe to add separately.
   initBrgyMap();
-});
+}); 
+
+
+
+
+ //Volunteer Logout with confirm alert
+
+function handleVolunteerLogout() {
+    const isSure = confirm("Are you sure you want to log out?");
+    if (isSure) {
+        window.location.href = 'index.html'; // Adjust this to your actual login page filename
+    }
+}
+
+
+//Tab switching for Volunteer Portal
+function switchVolunteerTab(btn, tabId) {
+    // Nav buttons update
+    document.querySelectorAll('.subnav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Panel update
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    const target = document.getElementById('vtab-' + tabId);
+    if (target) target.classList.remove('hidden');
+
+    window.scrollTo(0, 0);
+}
+
+
+//para sa month
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+const leaderboardMonth = document.getElementById("leaderboardMonth");
+
+if (leaderboardMonth) {
+    const today = new Date();
+    leaderboardMonth.textContent =
+        `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+}
+
+
+// Keep track of which account we're recovering across steps
+let recoveryState = {
+  email: "",
+  securityQuestion: "",
+  securityAnswer: ""
+};
+ 
+/* ---------- Step navigation ---------- */
+function showStep(stepId) {
+  document.querySelectorAll(".recovery-step").forEach((step) => {
+    step.classList.add("hidden");
+  });
+  document.getElementById(stepId).classList.remove("hidden");
+}
+ 
+/* ---------- Show / hide password ---------- */
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  btn.classList.toggle("active", isHidden);
+}
+ 
+/* ---------- Helpers ---------- */
+function showFieldError(errorId) {
+  document.getElementById(errorId).classList.remove("hidden");
+}
+ 
+function hideFieldError(errorId) {
+  document.getElementById(errorId).classList.add("hidden");
+}
+ 
+/* ============================================================
+   STEP 1: Find account by email
+   ============================================================ */
+function handleFindAccount() {
+  const emailInput = document.getElementById("rec-email");
+  const email = emailInput.value.trim();
+  hideFieldError("email-error");
+ 
+  if (!email) {
+    document.getElementById("email-error").textContent =
+      "Please enter your registered email address.";
+    showFieldError("email-error");
+    return;
+  }
+ 
+  // ---- TODO: Replace with real lookup (API call) ----
+  // Demo "database" of registered accounts and their security questions.
+  const demoAccounts = {
+    "juan@email.com": {
+      question: "What is your mother's maiden name?"
+    }
+  };
+ 
+  const account = demoAccounts[email.toLowerCase()];
+ 
+  if (!account) {
+    document.getElementById("email-error").textContent =
+      "No account found with that email address.";
+    showFieldError("email-error");
+    return;
+  }
+  // ---- end TODO ----
+ 
+  recoveryState.email = email;
+  recoveryState.securityQuestion = account.question;
+ 
+  document.getElementById("security-question-text").textContent =
+    account.question;
+ 
+  showStep("step-security");
+}
+ 
+/* ============================================================
+   STEP 2: Verify security question answer
+   ============================================================ */
+function handleVerifyAnswer() {
+  const answerInput = document.getElementById("rec-answer");
+  const answer = answerInput.value.trim();
+  hideFieldError("answer-error");
+ 
+  if (!answer) {
+    document.getElementById("answer-error").textContent =
+      "Please enter your answer.";
+    showFieldError("answer-error");
+    return;
+  }
+ 
+  // ---- TODO: Replace with real verification (API call) ----
+  // For demo purposes, any non-empty answer is accepted.
+  const isCorrect = true;
+  // ---- end TODO ----
+ 
+  if (!isCorrect) {
+    document.getElementById("answer-error").textContent =
+      "That answer doesn't match our records.";
+    showFieldError("answer-error");
+    return;
+  }
+ 
+  recoveryState.securityAnswer = answer;
+  showStep("step-reset");
+}
+ 
+/* ============================================================
+   STEP 3: Set a new password
+   ============================================================ */
+function handleResetPassword() {
+  const newPasswordInput = document.getElementById("rec-new-password");
+  const confirmPasswordInput = document.getElementById("rec-confirm-password");
+ 
+  const newPassword = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+ 
+  hideFieldError("new-password-error");
+  hideFieldError("confirm-password-error");
+ 
+  let hasError = false;
+ 
+  if (newPassword.length < 8) {
+    showFieldError("new-password-error");
+    hasError = true;
+  }
+ 
+  if (confirmPassword !== newPassword || confirmPassword === "") {
+    showFieldError("confirm-password-error");
+    hasError = true;
+  }
+ 
+  if (hasError) return;
+ 
+  // ---- TODO: Replace with real password update (API call) ----
+  // e.g. send recoveryState.email + newPassword to your backend.
+  // ---- end TODO ----
+ 
+  showStep("step-success");
+}
+ 
