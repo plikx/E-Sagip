@@ -59,23 +59,39 @@ function handleVolunteerLogin() {
   const password = document.getElementById('v-password')?.value;
 
   if (!email || !password) {
-    alert('Please enter your email and password.');
+    alert('Please enter your admin credentials.');
     return;
   }
 
-  alert('Volunteer sign-in successful!');
+  // Email validity check
+  if (!email.endsWith('@gmail.com')) {
+    alert('Email must be a @gmail.com address.');
+    document.getElementById('a-email').focus();
+    return;
+  }
+
+  // Demo: any credentials redirect to admin dashboard
+  window.location.href = 'admin_page.html';
 }
 
 /**
  * Handle admin login form submission.
  * Redirects to admin.html on success.
  */
+
 function handleAdminLogin() {
   const email    = document.getElementById('a-email')?.value.trim();
   const password = document.getElementById('a-password')?.value;
 
   if (!email || !password) {
     alert('Please enter your admin credentials.');
+    return;
+  }
+
+  // Email validity check
+  if (!email.endsWith('@gmail.com')) {
+    alert('Email must be a @gmail.com address.');
+    document.getElementById('a-email').focus();
     return;
   }
 
