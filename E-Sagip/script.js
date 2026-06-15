@@ -63,7 +63,6 @@ function handleVolunteerLogin() {
     return;
   }
 
-  // Demo: accept any non-empty credentials for volunteers
   alert('Volunteer sign-in successful!');
 }
 
