@@ -89,33 +89,76 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             Are you resident in Brgy. 628?
         </label>
-        <select id="resident" name="resident" required>
-            <option value="" disabled selected></option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-        </select>
+        <div class="resident-cb-container">
+          <div class="cb-div">
+       <input type="checkbox" value="resident" class="resident" id="resident" name="resident">
+        <label for="resident">Barangay 628 Resident</label>
+       </div>
+          <p>Tick this if your current home address is within Brgy. 628</p>
+       </div>
 
-        <div class="address-div1">
-          <div class="address-label-container">
-            <label for="resident-address">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              Home Address in Brgy. 628
-            </label>
-            <span class="req">*</span>
-          </div>
-          <input type="text" id="resident-address" name="resident-address" placeholder="House No., Street, Purok, Brgy. 628, Sta. Mesa">
-        </div>
+       <div class="address-div1">
+  <div class="address-label-container">
+    <label for="resident-address">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Purok
+    </label>
+    <span class="req">*</span>
+  </div>
+  <select id="resident-address" name="resident-address">
+    <option value="" disabled selected>Select Purok</option>
+    <option>Purok 1, Brgy. 628, Sta. Mesa, Manila</option>
+    <option>Purok 2, Brgy. 628, Sta. Mesa, Manila</option>
+    <option>Purok 3, Brgy. 628, Sta. Mesa, Manila</option>
+    <option>Purok 4, Brgy. 628, Sta. Mesa, Manila</option>
+    <option>Purok 5, Brgy. 628, Sta. Mesa, Manila</option>
+    <option>Purok 6, Brgy. 628, Sta. Mesa, Manila</option>
+    <option>Purok 7, Brgy. 628, Sta. Mesa, Manila</option>
+  </select>
 
-        <div class="address-div2">
-          <div class="address-label-container">
-            <label for="outside-address">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              Where are you from?
-            </label>
-            <span class="req">*</span>
-          </div>
-          <input type="text" id="outside-address" name="outside-address" placeholder="Brgy 425">
-        </div>
+  <div class="address-label-container">
+  <label for="house-no">House No. / Street (Optional)</label>
+  </div>
+  <input type="text" name="house-no" id="house-no" placeholder="e.g. 12 Rizal St.">
+</div>
+
+<div class="address-div2">
+  <div class="address-label-container">
+    <label for="outside-address">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      City/Municipality
+    </label>
+    <span class="req">*</span>
+  </div>
+
+  
+  <select id="outside-address" name="outside-address">
+    <option value="" disabled selected>Select City/ Municipality</option>
+    <option>Manila (Other Barangay)</option>
+    <option>Quezon City</option>
+    <option>Caloocan</option>
+    <option>Las Piñas</option>
+    <option>Makati</option>
+    <option>Malabon</option>
+    <option>Mandaluyong</option>
+    <option>Marikina</option>
+    <option>Muntinlupa</option>
+    <option>Navotas</option>
+    <option>Parañaque</option>
+    <option>Pasay</option>
+    <option>Pasig</option>
+    <option>Pateros</option>
+    <option>San Juan</option>
+    <option>Taguig</option>
+    <option>Valenzuela</option>
+    <option>Outside Metro Manila</option>
+  </select>
+
+  <div class="address-label-container">
+    <label for="outside-address-brgy">Barangay (Optional)</label>
+  </div>
+  <input type="text" class="outside-address-brgy" id="outside-address-brgy" name="outside-address-brgy" placeholder="e.g. Brgy. San Antonio">
+</div>
       </div>
 
       <div class="form-group">
