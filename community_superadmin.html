@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Sagip – Community Information</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style2.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="icon" href="Images/628_icon.png" type="image/png" />
+</head>
+<body class="superadmin_community-page">
+
+<!-- Header -->
+<header class="community-header">
+
+    <button
+        class="back-btn"
+        type="button"
+        onclick="window.history.back()"
+        aria-label="Back">
+
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
+        </svg>
+
+    </button>
+
+    <div class="community-header-text">
+        <h1>Community Information</h1>
+        <p>Barangay 628, Sta. Mesa, Manila</p>
+    </div>
+
+    <button id="editCommunityBtn" class="community-edit-btn">
+
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round"
+         stroke-linejoin="round">
+
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+
+    </svg>
+
+    <span>Edit</span>
+
+</button>
+
+</header>
+  <!-- Sub Nav -->
+  <nav class="community-tabs">
+    <button class="community-tab active" id="ctab-infohub" onclick="switchCommunityTab('infohub')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      Info Hub
+    </button>
+    <button class="community-tab" id="ctab-map" onclick="switchCommunityTab('map')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+      Map
+    </button>
+    <button class="community-tab" id="ctab-bulletin" onclick="switchCommunityTab('bulletin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      Bulletin
+    </button>
+    <button class="community-tab" id="ctab-contacts" onclick="switchCommunityTab('contacts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      Contacts
+    </button>
+  </nav>
+
+  <!-- Content -->
+  <div class="community-content">
+
+    <!-- ===== INFO HUB ===== -->
+    <div class="community-panel active" id="cpanel-infohub">
+
+      <div class="brgy-banner">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Barangay 628</h2>
+          <p class="banner-sub">Sta. Mesa, Manila</p>
+          <p class="banner-desc">
+            Barangay 628 is located in Sta. Mesa, Manila — a district known for its resilient
+            community spirit. The Barangay Disaster Risk Reduction and Management Council (BDRRMC)
+            coordinates all emergency response activities.
+          </p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="quickfacts-header">
+<div class="quickfacts-header">
+
+    <h3>Quick Facts</h3>
+
+    <span
+        id="editingBadge"
+        class="editing-badge"
+        style="display:none;">
+
+        <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2">
+
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+
+        </svg>
+
+        <span>Editing</span>
+
+    </span>
+
+</div>
+</div>
+
+<div class="quick-facts-list">
+
+    <div class="fact-row">
+        <span class="fact-label">District</span>
+        <span class="fact-value editable">Sta. Mesa, Manila, NCR</span>
+    </div>
+
+    <div class="fact-row">
+        <span class="fact-label">BDRRMC Coordinator</span>
+        <span class="fact-value editable">Rodel A. Reyes</span>
+    </div>
+
+    <div class="fact-row">
+        <span class="fact-label">Barangay Captain</span>
+        <span class="fact-value editable">Raul D. Marasigan</span>
+    </div>
+
+    <div class="fact-row">
+        <span class="fact-label">Barangay Hall Hours</span>
+        <span class="fact-value editable">Mon–Fri, 8:00 AM – 5:00 PM</span>
+    </div>
+
+    <div class="fact-row">
+        <span class="fact-label">Registered Volunteers</span>
+        <span class="fact-value editable">0 active</span>
+    </div>
+
+    <div class="fact-row">
+        <span class="fact-label">Evacuation Centers</span>
+        <span class="fact-value editable">3 designated sites</span>
+    </div>
+
+    <div id="addFactContainer" style="display:none;">
+
+    <button
+        id="addFactBtn"
+        class="add-fact-btn">
+
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2">
+
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 8v8"></path>
+            <path d="M8 12h8"></path>
+
+        </svg>
+
+        <span>Add Fact</span>
+
+    </button>
+
+</div>
+</div>
+      </div>
+
+      <div class="info-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Flood Risk Areas
+        </h3>
+        <div class="risk-row">
+          <span class="risk-dot high"></span>
+          <div>
+            <div class="risk-title high">High Risk</div>
+        <div class="risk-sub editable">Purok 1–3 (near Estero de Paco)</div>
+          </div>
+        </div>
+        <div class="risk-row">
+          <span class="risk-dot medium"></span>
+          <div>
+            <div class="risk-title medium">Medium Risk</div>
+           <div class="risk-sub editable">Purok 4–5 (low-lying streets)</div>
+          </div>
+        </div>
+        <div class="risk-row">
+          <span class="risk-dot low"></span>
+          <div>
+            <div class="risk-title low">Low Risk</div>
+            <div class="risk-sub editable">Purok 6–8 (elevated areas)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== MAP ===== -->
+    <div class="community-panel" id="cpanel-map">
+
+      <h2 class="community-page-title">Geographical Map</h2>
+
+      <div id="brgy-map" class="map-area"></div>
+
+      <div class="info-card">
+        <h3>Map Legend</h3>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-dot maroon"></span> Barangay Hall</div>
+          <div class="legend-item"><span class="legend-dot green"></span> Evacuation Center</div>
+          <div class="legend-item"><span class="legend-dot red"></span> Fire Station</div>
+          <div class="legend-item"><span class="legend-dot blue"></span> Health Facility</div>
+          <div class="legend-item"><span class="legend-dot blue"></span> Water/Estero</div>
+        </div>
+      </div>
+
+     <div class="map-section-header">
+
+    <h2 class="community-page-title">
+        Evacuation Centers
+    </h2>
+
+    <button
+        id="addEvacBtn"
+        class="add-evac-btn"
+        style="display:none;">
+
+        <svg width="16"
+             height="16"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v8"/>
+            <path d="M8 12h8"/>
+
+        </svg>
+
+        <span>Add</span>
+
+    </button>
+
+</div>
+
+      <div class="evac-card">
+
+    <button class="edit-evac-btn" style="display:none;">
+
+        <svg width="18" height="18" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+
+        </svg>
+
+    </button>
+
+    <div class="evac-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+    </div>
+
+    <div class="evac-info">
+
+        <div class="evac-name-row">
+
+            <h4 class="editable">
+                Sta. Mesa National High School
+            </h4>
+
+            <span class="evac-tag primary editable">
+                Primary
+            </span>
+
+        </div>
+
+        <div class="evac-address editable">
+            Sta. Mesa Blvd, Manila
+        </div>
+
+        <div class="evac-capacity editable">
+            Capacity: 500 persons
+        </div>
+
+    </div>
+
+</div>
+
+     <div class="evac-card">
+
+    <button class="edit-evac-btn" style="display:none;">
+
+        <svg width="18" height="18" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+
+        </svg>
+
+    </button>
+
+    <div class="evac-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+    </div>
+
+    <div class="evac-info">
+
+        <div class="evac-name-row">
+
+            <h4 class="editable">
+                Brgy. 628 Covered Court
+            </h4>
+
+            <span class="evac-tag secondary editable">
+                Secondary
+            </span>
+
+        </div>
+
+        <div class="evac-address editable">
+            Purok 4, Brgy. 628
+        </div>
+
+        <div class="evac-capacity editable">
+            Capacity: 200 persons
+        </div>
+
+    </div>
+
+</div>
+
+      <div class="evac-card">
+
+    <button class="edit-evac-btn" style="display:none;">
+
+        <svg width="18" height="18" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+
+        </svg>
+
+    </button>
+
+    <div class="evac-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+    </div>
+
+    <div class="evac-info">
+
+        <div class="evac-name-row">
+
+            <h4 class="editable">
+                Manila Science High School
+            </h4>
+
+            <span class="evac-tag tertiary editable">
+                Tertiary
+            </span>
+
+        </div>
+
+        <div class="evac-address editable">
+            P. Tuazon Blvd, Manila
+        </div>
+
+        <div class="evac-capacity editable">
+            Capacity: 300 persons
+        </div>
+    </div>
+    </div>
+
+</div>
+
+    <!-- ===== BULLETIN ===== -->
+<div class="community-panel" id="cpanel-bulletin">
+
+  <div class="quickfacts-header">
+
+    <h2 class="community-page-title">
+      Disaster Preparedness Bulletin
+    </h2>
+
+    <span
+      id="bulletinEditingBadge"
+      class="editing-badge"
+      style="display:none;">
+
+      <svg width="14"
+           height="14"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2">
+
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+
+      </svg>
+
+      Editing
+
+    </span>
+
+  </div>
+
+  <!-- Flood -->
+  <div class="bulletin-card">
+
+    <div class="bulletin-header blue">
+
+      <div class="bulletin-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+        </svg>
+      </div>
+
+      <h4 class="editable">
+        Flood Preparedness
+      </h4>
+
+    </div>
+
+    <div class="bulletin-list">
+
+      <div class="bulletin-item">
+        <span class="num-badge blue">1</span>
+        <span class="editable">Keep emergency bags ready (ID, medicines, valuables, 3 days of food/water)</span>
+      </div>
+
+      <div class="bulletin-item">
+        <span class="num-badge blue">2</span>
+        <span class="editable">Know your evacuation route before floodwaters rise</span>
+      </div>
+
+      <div class="bulletin-item">
+        <span class="num-badge blue">3</span>
+        <span class="editable">Turn off electrical appliances when flooding is imminent</span>
+      </div>
+
+      <div class="bulletin-item">
+        <span class="num-badge blue">4</span>
+        <span class="editable">Never walk through moving floodwater — it can knock you down</span>
+      </div>
+
+      <div class="bulletin-item">
+        <span class="num-badge blue">5</span>
+        <span class="editable">Stay informed via PAGASA and Barangay announcements</span>
+      </div>
+
+    </div>
+
+    <div class="addTipContainer" style="display:none;">
+
+      <button class="add-tip-btn">
+
+        <svg width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v8"/>
+          <path d="M8 12h8"/>
+
+        </svg>
+
+        <span>Add Tip</span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Typhoon -->
+  <div class="bulletin-card">
+
+    <div class="bulletin-header violet">
+
+      <div class="bulletin-icon violet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+        </svg>
+      </div>
+
+      <h4 class="editable">
+        Typhoon Safety
+      </h4>
+
+    </div>
+
+    <div class="bulletin-list">
+
+      <div class="bulletin-item"><span class="num-badge violet">1</span><span class="editable">Reinforce windows and doors before the typhoon arrives</span></div>
+      <div class="bulletin-item"><span class="num-badge violet">2</span><span class="editable">Secure loose outdoor items that could become projectiles</span></div>
+      <div class="bulletin-item"><span class="num-badge violet">3</span><span class="editable">Charge all devices and prepare flashlights with spare batteries</span></div>
+      <div class="bulletin-item"><span class="num-badge violet">4</span><span class="editable">Fill clean containers with water before the storm</span></div>
+      <div class="bulletin-item"><span class="num-badge violet">5</span><span class="editable">Stay indoors during the typhoon eye — it will pass, then resume</span></div>
+
+    </div>
+
+    <div class="addTipContainer" style="display:none;">
+
+      <button class="add-tip-btn">
+
+        <svg width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v8"/>
+          <path d="M8 12h8"/>
+
+        </svg>
+
+        <span>Add Tip</span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Fire -->
+  <div class="bulletin-card">
+
+    <div class="bulletin-header red">
+
+      <div class="bulletin-icon red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+
+      <h4 class="editable">
+        Fire Emergency
+      </h4>
+
+    </div>
+
+    <div class="bulletin-list">
+
+      <div class="bulletin-item"><span class="num-badge red">1</span><span class="editable">Do not use elevators — always take the stairs during a fire</span></div>
+      <div class="bulletin-item"><span class="num-badge red">2</span><span class="editable">Crawl low under smoke to avoid inhalation</span></div>
+      <div class="bulletin-item"><span class="num-badge red">3</span><span class="editable">Call 911 or BFP immediately — do not attempt to fight large fires</span></div>
+      <div class="bulletin-item"><span class="num-badge red">4</span><span class="editable">Touch doors before opening — if hot, use another exit</span></div>
+      <div class="bulletin-item"><span class="num-badge red">5</span><span class="editable">Have a designated family meeting point outside</span></div>
+
+    </div>
+
+    <div class="addTipContainer" style="display:none;">
+
+      <button class="add-tip-btn">
+
+        <svg width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v8"/>
+          <path d="M8 12h8"/>
+
+        </svg>
+
+        <span>Add Tip</span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Donation -->
+  <div class="bulletin-card">
+
+    <div class="bulletin-header green">
+
+      <div class="bulletin-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+
+      <h4 class="editable">
+        Donation Guidelines
+      </h4>
+
+    </div>
+
+    <div class="bulletin-list">
+
+      <div class="bulletin-item"><span class="num-badge green">1</span><span class="editable">Coordinate with Barangay Hall before donating to avoid duplication</span></div>
+      <div class="bulletin-item"><span class="num-badge green">2</span><span class="editable">Bring non-perishable food items (canned goods, instant noodles, rice)</span></div>
+      <div class="bulletin-item"><span class="num-badge green">3</span><span class="editable">Hygiene kits (soap, toothbrush, sanitary pads) are always needed</span></div>
+      <div class="bulletin-item"><span class="num-badge green">4</span><span class="editable">Clothing donations should be clean and usable</span></div>
+      <div class="bulletin-item"><span class="num-badge green">5</span><span class="editable">Cash donations go directly to BDRRMC relief operations fund</span></div>
+
+    </div>
+
+    <div class="addTipContainer" style="display:none;">
+
+      <button class="add-tip-btn">
+
+        <svg width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v8"/>
+          <path d="M8 12h8"/>
+
+        </svg>
+
+        <span>Add Tip</span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+    <!-- ===== CONTACTS ===== -->
+    <div class="community-panel" id="cpanel-contacts">
+
+      <h2 class="community-page-title">Emergency Contacts</h2>
+
+      <div class="hotline-card">
+        <div class="hotline-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="hotline-number">911</div>
+          <div class="hotline-desc">National Emergency Hotline — Available 24/7</div>
+        </div>
+      </div>
+
+      <div class="directory-card">
+
+    <div class="quickfacts-header">
+
+        <h3>
+            Directory
+        </h3>
+
+        <button
+            id="addContactBtn"
+            class="add-evac-btn"
+            style="display:none;">
+
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2">
+
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+
+            </svg>
+
+            <span>Add</span>
+
+        </button>
+
+    </div>
+
+        <div class="directory-row">
+          <div class="directory-icon maroon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">Barangay 628 Hall</div>
+            <div class="dir-sub">Barangay</div>
+          </div>
+          <div class="directory-number maroon">----</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">Manila DRRMO</div>
+            <div class="dir-sub">DRRMO</div>
+          </div>
+          <div class="directory-number orange">(02) 8527-3660 || 0950-700-3710 || 0934-519-2604</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">PNP Sta. Mesa Station</div>
+            <div class="dir-sub">Police</div>
+          </div>
+          <div class="directory-number blue">0998-598-7908</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">BFP Sta. Mesa</div>
+            <div class="dir-sub">Fire</div>
+          </div>
+          <div class="directory-number orange">0993-955-2983</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">Philippine Red Cross Manila</div>
+            <div class="dir-sub">Medical</div>
+          </div>
+          <div class="directory-number green">-----</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">Manila Health Dept.</div>
+            <div class="dir-sub">Medical</div>
+          </div>
+          <div class="directory-number green">-----</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">Meralco Power Outage</div>
+            <div class="dir-sub">Utilities</div>
+          </div>
+        
+          <div class="directory-number violet">09209716211 (SMART) || 09175516211 (GLOBE)</div>
+        </div>
+
+        <div class="directory-row">
+          <div class="directory-icon violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="directory-info">
+            <div class="dir-name">MWSS Water Concerns</div>
+            <div class="dir-sub">Utilities</div>
+          </div>
+          <div class="directory-number violet">0998-864-1446</div>
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-card-header">
+          <h3>About the Developers</h3>
+          <p>E-Sagip Volunteer Management System</p>
+        </div>
+
+        <div class="dev-row">
+          <div class="dev-avatar">JF</div>
+          <div class="dev-info">
+            <div class="dev-name">John Felix T. Sungahid</div>
+            <div class="dev-role">Project Manager</div>
+            <div class="dev-school">Diploma in Information Technology · PUP Manila</div>
+          </div>
+        </div>
+
+        <div class="dev-row">
+          <div class="dev-avatar">RD</div>
+          <div class="dev-info">
+            <div class="dev-name">Ryan Dexter J. Libres</div>
+            <div class="dev-role">UI/UX Designer</div>
+            <div class="dev-school">Diploma in Information Technology · PUP Manila</div>
+          </div>
+        </div>
+
+        <div class="dev-row">
+          <div class="dev-avatar">JC</div>
+          <div class="dev-info">
+            <div class="dev-name">Jhon Carl T. Gabarda</div>
+            <div class="dev-role">Frontend Developer</div>
+            <div class="dev-school">Diploma in Information Technology · PUP Manila</div>
+          </div>
+        </div>
+    
+
+     <div class="dev-row">
+          <div class="dev-avatar">JM</div>
+          <div class="dev-info">
+            <div class="dev-name">John Marvin O. Soleybar</div>
+            <div class="dev-role">Frontend Developer</div>
+            <div class="dev-school">Diploma in Information Technology · PUP Manila</div>
+          </div>
+        </div>
+
+          <div class="dev-row">
+          <div class="dev-avatar">SV</div>
+          <div class="dev-info">
+            <div class="dev-name">Spike Vincent M. Palagam</div>
+            <div class="dev-role">Backend Developer</div>
+            <div class="dev-school">Diploma in Information Technology · PUP Manila</div>
+          </div>
+        </div>
+
+          <div class="dev-row">
+          <div class="dev-avatar">EA</div>
+          <div class="dev-info">
+            <div class="dev-name">Euan Alfonso M. Suba</div>
+            <div class="dev-role">Backend Developer</div>
+            <div class="dev-school">Diploma in Information Technology · PUP Manila</div>
+          </div>
+        </div>
+
+      <div class="app-version-footer">
+        Version 1.0.0 · Developed for BDRRMC Brgy. 628<br>
+        Sta. Mesa, Manila · 2026
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+  <script src="script2.js"></script>
+  <script src="superadmin.js"></script>
+</body>
+</html>
