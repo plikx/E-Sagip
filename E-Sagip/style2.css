@@ -12,8 +12,20 @@
 }
 
 .empty-icon{
-    font-size:60px;
-    margin-bottom:18px;
+    width:72px;
+    height:72px;
+    margin:0 auto 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f8eef1;
+    border-radius:50%;
+    color:#8d0028;
+}
+
+.empty-icon svg{
+    width:34px;
+    height:34px;
 }
 
 .empty-state h3{
@@ -937,4 +949,845 @@
 .empty-feed-placeholder {
     padding: 50px; text-align: center; background: rgba(0,0,0,0.02);
     border: 2px dashed #ddd; border-radius: 25px; color: #999;
+}
+
+
+
+/* =========================
+   Operations Search
+========================= */
+
+.ops-search{
+    position:relative;
+    margin:20px 0 12px;
+}
+
+.search-icon{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#9b9b9b;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+}
+
+.ops-search input{
+    width:100%;
+    padding:12px 16px 12px 42px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    background:#fff;
+    font-size:14px;
+    outline:none;
+    transition:.25s;
+}
+
+.ops-search input:focus{
+    border-color:#8d0028;
+    box-shadow:0 0 0 3px rgba(141,0,40,.12);
+}
+
+.ops-search input::placeholder{
+    color:#999;
+}
+
+/* =========================
+   Filter Chips
+========================= */
+
+.ops-filters{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    white-space:nowrap;
+    padding-bottom:8px;
+    margin-bottom:8px;
+
+    scrollbar-width:none;
+}
+
+.ops-filters::-webkit-scrollbar{
+    display:none;
+}
+
+.ops-filters button{
+    border:none;
+    border-radius:999px;
+    padding:8px 14px;
+    background:#f5f5f5;
+    color:#8d0028;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+    flex-shrink:0;
+}
+
+.ops-filters button:hover{
+    background:#ecd6dc;
+}
+
+.ops-filters button.active{
+    background:#8d0028;
+    color:#fff;
+}
+
+
+/* =========================
+   Operations Count
+========================= */
+
+.ops-count{
+    display:block;
+    margin-bottom:18px;
+    color:#777;
+    font-size:12px;
+}
+
+
+/* =========================
+   Responsive
+========================= */
+
+@media(max-width:768px){
+
+    .ops-search input{
+        font-size:13px;
+    }
+
+    .ops-filters button{
+        font-size:11px;
+        padding:7px 12px;
+    }
+
+}
+
+
+/* =========================
+   SUPERADMIN
+========================= */
+
+
+.export-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 0;
+    border-bottom:1px solid #ececec;
+}
+
+.export-item:last-child{
+    border-bottom:none;
+}
+
+.export-item strong{
+    display:block;
+    font-size:15px;
+    color:#3b0d11;
+}
+
+.export-item small{
+    color:#777;
+    font-size:13px;
+}
+
+
+/* ==========================
+   EXPORT SYSTEM DATA
+========================== */
+
+.export-card{
+    background:#fff;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.export-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:17px;
+    font-weight:700;
+    color:#7b001f;
+    margin-bottom:16px;
+}
+
+.export-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:15px 16px;
+
+    border:1px solid #e8cfd5;
+    border-radius:14px;
+
+    margin-bottom:12px;
+
+    cursor:pointer;
+    transition:.2s;
+}
+
+.export-row:last-child{
+    margin-bottom:0;
+}
+
+.export-row:hover{
+    background:#faf6f7;
+    border-color:#9b0027;
+}
+
+.export-left{
+    display:flex;
+    flex-direction:column;
+}
+
+.export-left strong{
+    font-size:15px;
+    color:#2f2f2f;
+}
+
+.export-left span{
+    font-size:13px;
+    color:#8b8b8b;
+    margin-top:3px;
+}
+
+.export-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#8b6b6b;
+    font-size:13px;
+    font-weight:600;
+}
+
+.export-right svg{
+    width:16px;
+    height:16px;
+    stroke:#98002a;
+}
+
+/* ==========================
+  ADMIN TAB FOR SUPERADMIN
+========================== */
+
+
+
+.admins-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+gap:16px;
+flex-wrap:wrap;
+}
+
+.admin-add-btn{
+width:auto;
+padding:0 22px;
+height:44px;
+font-size:14px;
+}
+
+#admin-count{
+margin:0;
+font-weight:600;
+color:#666;
+}
+
+/* ==========================================================
+   SUPERADMIN - VOLUNTEER TAB
+========================================================== */
+
+.superadmin-page .vol-search-wrap{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+    border:1px solid #e4d1d5;
+    border-radius:16px;
+    padding:0 16px;
+    height:52px;
+    margin:20px 0 18px;
+}
+
+.superadmin-page .vol-search-wrap svg{
+    width:18px;
+    height:18px;
+    color:#9a9a9a;
+    flex-shrink:0;
+}
+
+.superadmin-page .vol-search-wrap input{
+    flex:1;
+    border:none;
+    outline:none;
+    background:transparent;
+    font-size:15px;
+    color:#555;
+}
+
+.superadmin-page .vol-search-wrap input::placeholder{
+    color:#999;
+}
+
+.superadmin-page .vol-filter-row{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:8px;
+    margin-bottom:18px;
+    scrollbar-width:none;
+}
+
+.superadmin-page .vol-filter-row::-webkit-scrollbar{
+    display:none;
+}
+
+.superadmin-page .vfilter-btn{
+    white-space:nowrap;
+    padding:11px 18px;
+    border-radius:999px;
+    border:1px solid #e4ccd3;
+    background:#fff;
+    color:#8b0022;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.superadmin-page .vfilter-btn:hover{
+    background:#f8eef2;
+}
+
+.superadmin-page .vfilter-btn.active{
+    background:#8b0022;
+    color:#fff;
+    border-color:#8b0022;
+}
+
+.superadmin-page .vol-count{
+    margin:8px 0 22px;
+    font-size:14px;
+    color:#8c7a7f;
+}
+
+.superadmin-page .vol-list{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.superadmin-page .vol-card{
+    background:#fff;
+    border-radius:20px;
+    padding:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    border:1px solid #ececec;
+}
+
+.superadmin-page .vol-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+
+.superadmin-page .vol-left{
+    display:flex;
+    gap:16px;
+}
+
+.superadmin-page .avatar{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:#f7e5ea;
+    color:#8b0022;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+
+.superadmin-page .vol-name-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+}
+
+.superadmin-page .vol-name{
+    font-size:19px;
+    font-weight:700;
+    color:#222;
+}
+
+.superadmin-page .status-badge{
+    background:#dff3df;
+    color:#2e7d32;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.superadmin-page .vol-meta{
+    font-size:14px;
+    color:#666;
+    line-height:1.6;
+}
+
+.superadmin-page .vol-skills{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+}
+
+.superadmin-page .skill-tag{
+    background:#f7dfe6;
+    color:#8b0022;
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:13px;
+}
+
+.superadmin-page .vol-ops{
+    text-align:center;
+    min-width:60px;
+}
+
+.superadmin-page .vol-ops .num{
+    font-size:32px;
+    font-weight:700;
+    color:#8b0022;
+    line-height:1;
+}
+
+.superadmin-page .vol-ops .lbl{
+    color:#888;
+    font-size:13px;
+}
+
+.superadmin-page .vol-actions{
+    display:flex;
+    gap:12px;
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid #eee;
+}
+
+.superadmin-page .vol-actions button{
+    flex:1;
+    height:42px;
+    border-radius:999px;
+    border:1.5px solid #98002e;
+    background:#fff;
+    color:#98002e;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.superadmin-page .vol-actions button:hover{
+    background:#98002e;
+    color:#fff;
+}
+
+/* ================= SUPERADMIN FEED ================= */
+
+.superadmin-page .feed-actions-header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.superadmin-page .add-post-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+    border:none;
+    border-radius:999px;
+    background:#850021;
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.superadmin-page .add-post-btn svg{
+    width:16px;
+    height:16px;
+}
+
+.superadmin-page .add-post-btn:hover{
+    background:#a0002c;
+}
+
+/* Modal */
+
+.superadmin-page .modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+.superadmin-page .hidden{
+    display:none;
+}
+
+.superadmin-page .modal-content{
+    width:480px;
+    background:#fff;
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 20px 40px rgba(0,0,0,.18);
+}
+
+.superadmin-page .modal-content h2{
+    margin-bottom:24px;
+    color:#850021;
+}
+
+.superadmin-page .form-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.superadmin-page .form-group label{
+    font-weight:600;
+    color:#444;
+}
+
+.superadmin-page .form-group input,
+.superadmin-page .form-group textarea{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    outline:none;
+    font-size:14px;
+}
+
+.superadmin-page .form-group textarea{
+    resize:none;
+}
+
+.superadmin-page .modal-buttons{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:16px;
+}
+
+.superadmin-page .secondary-btn{
+    padding:10px 22px;
+    border:1px solid #ccc;
+    border-radius:999px;
+    background:#fff;
+    cursor:pointer;
+}
+
+.superadmin-page .primary-btn{
+    padding:10px 22px;
+    border:none;
+    border-radius:999px;
+    background:#850021;
+    color:#fff;
+    cursor:pointer;
+}
+
+.superadmin-page .primary-btn:hover{
+    background:#a0002c;
+}
+
+
+/* ======================================================
+   SUPERADMIN COMMUNITY HEADER
+====================================================== */
+
+.superadmin_community-page .community-header{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:18px 24px;
+    box-sizing:border-box;
+}
+
+.superadmin_community-page .community-header-text{
+    flex:1;
+    margin-left:18px;
+}
+
+.superadmin_community-page .community-header-text h1{
+    margin:0;
+    color:#fff;
+}
+
+.superadmin_community-page .community-header-text p{
+    margin:4px 0 0;
+    color:#f2dbe2;
+    font-size:.9rem;
+}
+
+.superadmin_community-page .community-edit-btn{
+
+    margin-left:auto;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:10px 22px;
+
+    background:#d66c89;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:999px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.superadmin_community-page .community-edit-btn:hover{
+
+    background:#c35273;
+
+}
+
+body.superadmin_community-page .community-edit-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:10px 22px;
+
+    background:#d76c87;
+    color:#fff;
+
+    border:none;
+    border-radius:999px;
+
+    font-size:15px;
+    font-weight:600;
+
+    cursor:pointer;
+    transition:.2s;
+}
+
+body.superadmin_community-page .community-edit-btn:hover{
+    background:#c85774;
+}
+
+body.superadmin_community-page .community-edit-btn svg{
+    width:16px;
+    height:16px;
+    stroke:currentColor;
+    flex-shrink:0;
+}
+
+body.community-editing .community-edit-btn{
+    background:#ffffff;
+    color:#7b0022;
+}
+
+.superadmin_community-page .editable{
+    transition:.2s;
+}
+
+.superadmin_community-page.community-editing .editable{
+    outline:2px dashed #d76c87;
+    outline-offset:4px;
+    border-radius:6px;
+    background:#fff8fb;
+    cursor:text;
+    padding:2px 4px;
+}
+
+.superadmin_community-page .editable:focus{
+    outline:2px solid #850021;
+}
+
+.editing-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+
+    margin-left:auto;
+
+    background:#f7edd0;
+    color:#9a6b00;
+
+    padding:6px 14px;
+    border-radius:999px;
+
+    font-size:13px;
+    font-weight:600;
+}
+
+.editing-badge svg{
+    width:14px;
+    height:14px;
+}
+
+.quickfacts-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+    margin-bottom:20px;
+}
+
+.quickfacts-header h3{
+    margin:0;
+}
+
+.editing-badge{
+    margin-left:auto;
+}
+
+.add-fact-btn{
+
+    width:100%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+
+    padding:12px;
+
+    border:2px dashed #edd2d2;
+    border-radius:12px;
+
+    background:transparent;
+
+    color:#9d6b6b;
+
+    font-size:15px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.add-fact-btn:hover{
+
+    background:#faf5f5;
+    border-color:#b1002d;
+    color:#b1002d;
+
+}
+
+#addFactContainer{
+    margin-top:18px;
+}
+
+.add-evac-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 16px;
+    border:none;
+    border-radius:10px;
+    background:#7a0019;
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.map-section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+
+}
+
+.evac-name-row .editable{
+
+    display:inline-block;
+    width:auto;
+
+}
+
+.evac-address.editable,
+.evac-capacity.editable{
+
+    display:inline-block;
+    width:auto;
+
+}
+
+
+/* =========================================
+   SUPER ADMIN - BULLETIN
+========================================= */
+
+.addTipContainer{
+    margin-top:16px;
+}
+
+.add-tip-btn{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    padding:12px;
+    border:2px dashed #d7d7d7;
+    border-radius:12px;
+    background:#fff;
+    color:#7a0019;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+
+}
+
+.add-tip-btn svg{
+    width:18px;
+    height:18px;
+}
+
+.add-tip-btn:hover{
+    border-color:#7a0019;
+    background:#fff6f8;
+}
+
+.community-editing .bulletin-item{
+    margin-bottom:10px;
+}
+
+.community-editing .bulletin-item .editable{
+    display:inline-block;
+    width:calc(100% - 45px);
 }
