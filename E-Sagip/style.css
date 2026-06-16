@@ -196,11 +196,14 @@ a {
 .address-div2 {
   display: none;
   margin-top: 10px;
+
 }
 
 .address-div1.active,
 .address-div2.active {
   display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 .toggle-pw {
@@ -222,10 +225,56 @@ a {
   height: 16px;
 }
 
+.resident-cb-container {
+
+  display: flex;
+  flex-direction: column;
+}
+
+.resident-cb-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--light-gray);
+  background-color: var(--light-gray);
+  padding: 8px 12px;
+}
+
+.cb-div {
+  display: flex;
+  flex-direction: row;
+  align-items: center; 
+  gap: 8px;              
+}
+
+.cb-div input[type="checkbox"] {
+  width: 16px;
+  height: 13px;
+  margin: 0;             
+  cursor: pointer;
+  flex-shrink: 0;        
+}
+
+.cb-div input[type="checkbox"]:checked {
+
+  accent-color: var(--accent);
+}
+
+.cb-div label {
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.resident-cb-container p {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: gray;
+}
+
 .address-label-container {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 5px;
 }
 
 .address-label-container label {
@@ -241,7 +290,7 @@ a {
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  margin-top: 0;
+  margin-top: 5;
 }
 
 /* Sign In Button */
