@@ -5,7 +5,7 @@
 }
 
 :root {
-  --primary: #7a0024;
+  --primary: #800020;
   --primary-dark: #560019;
   --primary-light: #9b0030;
   --accent: #c0003c;
@@ -655,7 +655,39 @@ a {
 }
 
 .comp-container {
-  margin-left: auto;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.comp-container svg {
+
+  height: 1rem;
+
+}
+
+.complete {
+
+  width: 100%;
+  border: 1px solid rgb(12, 95, 34);
+  background-color: #c9e8bb;
+  color: rgb(12, 95, 34);
+  border-radius: 20px;
+  padding: 8px;
+  font-family: var(--font-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.complete:hover {
+
+  background-color: #caf5c8;
+  transition: background-color 0.3 ease;
+  cursor: pointer;
 }
 
 .op-meta span {
@@ -670,24 +702,6 @@ a {
   width: 11px;
   height: 11px;
   flex-shrink: 0;
-}
-
-.complete {
-
-  border: 1px;
-  background-color: #2db35e69;
-  color: rgb(12, 95, 34);
-  border-radius: 10px;
-  padding: 5px;
-  font-family: var(--font-main);
-  font-weight: bold;
-}
-
-.complete:hover {
-
-  background-color: #50f19175;
-  transition: background-color 0.3 ease;
-  cursor: pointer;
 }
 
 .op-progress-bar {
@@ -1044,10 +1058,10 @@ a {
 
 .vol-ops {
   display: flex;
-  width: 120vh;
+  width: 100%;
   flex-direction: row;
   align-items: center;
-  gap: 30px;
+  gap: 20px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -1059,7 +1073,7 @@ a {
 
 .vol-ops-btn{
 
-  width: 120vh;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1088,7 +1102,7 @@ a {
   cursor: pointer;
 }
 
-.v-delete {
+.v-remove {
 
   padding: 1px 5px 1px 5px;
   width: 50%;
@@ -1097,9 +1111,10 @@ a {
   border-radius: 20px;
   background-color: var(--white);
   color: var(--accent);
+  gap: 10px;
 }
 
-.v-delete:hover {
+.v-remove:hover {
 
   border: 1px solid var(--primary);
   color: var(--primary);
@@ -1136,6 +1151,121 @@ a {
   display: inline-flex;
   align-items: center;
 }
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-overlay.hidden {
+  display: none;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 320px;
+  max-width: 90vw;
+  position: relative;
+}
+.modal-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+}
+.modal-close:hover { color: #1a1a1a; }
+
+/* ===== EDIT FORM ===== */
+.form-grp { margin-bottom: 12px; }
+.form-lbl {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a1228;
+  margin-bottom: 4px;
+}
+.form-grp input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 0.5px solid #ccc;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+.form-grp input:focus {
+  outline: none;
+  border-color: #7a1228;
+  box-shadow: 0 0 0 3px rgba(122, 18, 40, 0.1);
+}
+
+/* ===== CONFIRM TEXT ===== */
+.confirm-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+.confirm-text strong { color: #1a1a1a; }
+
+/* ===== MODAL FOOTER ===== */
+.modal-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 1.25rem;
+}
+.btn-cancel {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  background: transparent;
+  border: 0.5px solid #bbb;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #1a1a1a;
+}
+.btn-cancel:hover { background: #f5f5f5; }
+.btn-save {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #7a1228;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.btn-save:hover { opacity: 0.88; }
+.btn-remove-confirm {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #e05353;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.btn-remove-confirm:hover { opacity: 0.88; }
 
 /*=====FEED SECTION ==========================================================================================*/
 
@@ -1452,7 +1582,7 @@ a {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(white);
+  background: var(--warning-bg);
   padding: 6px 12px;
   display: flex;
   align-items: center;
@@ -1631,6 +1761,73 @@ a {
   transform: translateY(0);
 }
 
+.feed-footer-container {
+
+  background-color: var(--primary);
+  margin-top: 30px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  gap: 10px;
+  box-shadow: var(--card-shadow);
+ 
+
+}
+
+.v-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.v-logo-container > * {
+  flex: 0 0 auto;
+}
+
+.feed-footer-container .v-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 3.5rem;
+  height: 3.5rem;
+
+  border-radius: 50%;
+  background-color: rgba(170, 89, 89, 0.146);
+  color: white;
+
+  flex-shrink: 0;
+}
+
+.v-logo svg {
+
+  height: 2rem;
+
+}
+
+.feed-footer-container h3 {
+
+  color: white;
+}
+
+.feed-footer-container p  {
+
+  color: #dc7d95;
+}
+
+.vol-num-container {
+
+  color: #dc7d95;
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  justify-content: center;
+  gap: 5px;
+}
+
   /* ===== REGISTER PAGE ==================================================================================== */
     body { background: var(--off-white); }
 
@@ -1747,6 +1944,16 @@ a {
     .reg-row { display: flex; gap: 10px; }
     .reg-row .form-group { flex: 1; }
 
+    .age-eligible {
+
+      color: #22a050;
+    }
+
+    .age-minor {
+      
+      color: var(--accent);
+    }
+
     .form-group { margin-bottom: 14px; }
     .form-group label {
       display: flex;
@@ -1790,7 +1997,7 @@ a {
        padding-right: 28px;
     }
 
-    /* Emergency contact row */
+  
     .emergency-row { display: flex; gap: 8px; }
     .emergency-row input { flex: 1; }
 
@@ -2003,3 +2210,5 @@ a {
       font-weight: 600;
       cursor: pointer;
     }
+
+ 
