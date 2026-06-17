@@ -1050,11 +1050,18 @@ a {
   font-weight: 500;
   padding: 2px 6px;
   border-radius: 5px;
+   background: rgba(35, 185, 42, 0.24);
+  color: rgb(3, 49, 3);
 }
 
 .vol-badge.active {
   background: rgba(35, 185, 42, 0.24);
   color: rgb(3, 49, 3);
+}
+
+.vol-badge.inactive{
+  background: rgba(209, 88, 104, 0.24);
+  color: rgb(49, 3, 3);
 }
 
 .vol-meta {
@@ -1253,6 +1260,18 @@ a {
   color: #1a1a1a;
   box-sizing: border-box;
 }
+
+.form-grp select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 0.5px solid #ccc;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+
 .form-grp input:focus {
   outline: none;
   border-color: #7a1228;
