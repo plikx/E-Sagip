@@ -335,7 +335,11 @@
     </div>
     <div class="form-grp">
       <label class="form-lbl" for="edit-status">Status</label>
-      <input type="text" id="edit-status" />
+       <select class="edit-status" id="edit-status">
+            <option disabled selected>Select status</option>
+            <option>active</option>
+            <option>inactive</option>
+      </select>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
