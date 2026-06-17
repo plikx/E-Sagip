@@ -8,7 +8,6 @@ function openEditModal(btn) {
   const rawName = _activeCard.querySelector('.vol-name').childNodes[0].textContent.trim();
   const meta    = _activeCard.querySelector('.vol-meta').textContent.trim();
 
-  // meta format: "Purok 2, Brgy. 628 · 09171234567"
   const parts   = meta.split(' · ');
   const address = parts[0]?.trim() || '';
   const contact = parts[1]?.trim() || '';
@@ -40,18 +39,15 @@ function saveEditModal() {
   }
 
   if (_activeCard) {
-    // Update name (keep the badge element intact)
     const nameNode = _activeCard.querySelector('.vol-name');
     nameNode.childNodes[0].textContent = name + ' ';
 
-    // Update badge text and class if status changed
     const badge = nameNode.querySelector('.vol-badge');
     if (badge && status) {
       badge.textContent = status;
       badge.className   = 'vol-badge ' + status.toLowerCase();
     }
 
-    // Update meta: address · contact
     _activeCard.querySelector('.vol-meta').textContent = address + ' · ' + contact;
 
     // Update avatar initials
@@ -83,8 +79,6 @@ function confirmRemoveModal() {
   closeRemoveModal();
 }
 
-
-/* ===== CLOSE ON OVERLAY CLICK / ESCAPE ===== */
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('edit-modal')?.addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
