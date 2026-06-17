@@ -1,5 +1,4 @@
 function handleDeployOp() {
-  // ── Gather values ───────────────────────────────────────────────
   const title    = document.querySelector('.form-group input[placeholder="e.g. Flood Relief Distribution"]')?.value.trim();
   const location = document.querySelector('.form-group input[placeholder="Purok/Street, Brgy. 628, Sta. Mesa"]')?.value.trim();
   const sched    = document.getElementById('sched')?.value;
@@ -7,6 +6,21 @@ function handleDeployOp() {
 
   if (!title || !location || !sched || !slots) {
     alert('Please fill in all required fields (Title, Location, Schedule, Slots).');
+    return;
+  }
+
+  // ── Require at least one skill checkbox ─────────────────────────
+  const checkedSkills = [...document.querySelectorAll('#skill-tags input[type="checkbox"]:checked')];
+  if (checkedSkills.length === 0) {
+    alert('Please select at least one required skill.');
+    return;
+  }
+
+  // ── If "Others" is checked, require the textarea ────────────────
+  const othersChecked = document.getElementById('skill-others')?.checked;
+  const otherSkillVal = document.getElementById('other-skill')?.value.trim();
+  if (othersChecked && !otherSkillVal) {
+    alert('Please describe the other required skills.');
     return;
   }
 
@@ -19,7 +33,6 @@ function handleDeployOp() {
   });
   const schedDisplay = `${formattedDate} · ${formattedTime}`;
 
-  // ── Build card ──────────────────────────────────────────────────
   const card = document.createElement('div');
   card.className = 'op-card';
   card.innerHTML = `
@@ -54,8 +67,11 @@ function handleDeployOp() {
     </div>
     <div class="op-progress-bar"><div class="op-progress-fill" style="width:0%"></div></div>
     <div class="comp-container">
-        <button class="complete" onclick="complete()">Complete</button>
-      </div>
+      <button class="complete" onclick="complete()"><svg viewBox="0 0 24 24" fill="none" stroke="#1a7a40" stroke-width="2" width="28" height="28">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>Complete</button>
+    </div>
     <div class="op-details">
       <p>Enrolled volunteers:</p>
       <div class="volunteer-tags">
@@ -64,18 +80,14 @@ function handleDeployOp() {
     </div>
   `;
 
-  // ── Append to list ──────────────────────────────────────────────
   document.getElementById('operation-list').appendChild(card);
 
-  // ── Increment stat-value counter ────────────────────────────────
   const statEl = document.querySelector('.stat-value-op');
   if (statEl) statEl.textContent = Number(statEl.textContent) + 1;
 
-  // ── Navigate to dashboard tab ───────────────────────────────────
   document.querySelectorAll('.dashboard-content').forEach(tab => tab.classList.add('hidden'));
   document.getElementById('tab-dashboard').classList.remove('hidden');
 
-  // ── Reset form ──────────────────────────────────────────────────
   document.querySelector('.form-group input[placeholder="e.g. Flood Relief Distribution"]').value = '';
   document.querySelector('.form-group input[placeholder="Purok/Street, Brgy. 628, Sta. Mesa"]').value = '';
   document.getElementById('sched').value = '';
