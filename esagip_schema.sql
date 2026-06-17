@@ -1,6 +1,6 @@
 -- ============================================================
 --  E-Sagip · BDRRMC Barangay 628 Volunteer System
---  MySQL Database Schema
+--  MySQL Database Schema  (v2 — adds admin/superadmin roles)
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS esagip CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -8,11 +8,16 @@ USE esagip;
 
 -- ------------------------------------------------------------
 -- 1. ADMINS
+--    role: 'admin'      = day-to-day BDRRMC coordinator
+--                          (manage volunteers, operations, feed)
+--          'superadmin'  = full control: manage other admins,
+--                          edit community info page, export data
 -- ------------------------------------------------------------
 CREATE TABLE admins (
     id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(100)  NOT NULL,
     email         VARCHAR(150)  NOT NULL UNIQUE,
+    role          ENUM('admin', 'superadmin') NOT NULL DEFAULT 'admin',
     password_hash VARCHAR(255)  NOT NULL,
     created_at    TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -196,3 +201,9 @@ LEFT JOIN enrollments e ON e.volunteer_id = v.id AND e.status = 'completed'
 GROUP BY v.id
 ORDER BY completed_ops DESC;
 
+-- ------------------------------------------------------------
+-- SEED: Promote a superadmin account
+--   Replace the email below with the admin account you log
+--   in with, then uncomment and run this line.
+-- ------------------------------------------------------------
+-- UPDATE admins SET role = 'superadmin' WHERE email = 'admin@gmail.com';
