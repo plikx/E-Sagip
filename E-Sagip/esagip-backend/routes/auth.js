@@ -70,9 +70,14 @@ router.post('/login', async (req, res) => {
             if (!valid) return res.status(401).json({ error: "Incorrect password." });
 
             return res.json({ 
-                success: true, 
-                user: { id: volunteer[0].id, name: `${volunteer[0].first_name} ${volunteer[0].last_name}`, role: 'volunteer' } 
-            });
+    success: true, 
+    user: { 
+        id: volunteer[0].id, 
+        name: `${volunteer[0].first_name} ${volunteer[0].last_name}`, 
+        role: 'volunteer',
+        status: volunteer[0].status   // ← add this
+    } 
+});
         }
     } catch (err) {
         console.error(err);
