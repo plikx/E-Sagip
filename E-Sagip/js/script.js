@@ -31,6 +31,25 @@ function renderVolunteers(volunteers) {
         return;
     }
 
+    const maxCount = Math.max(...Object.values(counts), 1);
+
+    document.querySelectorAll('.skills-card .skill-row').forEach(row => {
+        const labelEl = row.querySelector('.skill-label');
+        const barEl = row.querySelector('.skill-bar');
+        const countEl = row.querySelector('.skill-count');
+
+        if (!labelEl || !barEl || !countEl) return;
+
+        const skillName = labelEl.textContent.trim();
+        const count = counts[skillName] || 0;
+        const width = (count / maxCount) * 100;
+
+        countEl.textContent = count;
+        barEl.style.width = `${width}%`;
+    });
+}
+
+
     volList.innerHTML = volunteers.map(v => {
         const initials = (v.first_name[0] || '') + (v.last_name[0] || '');
         const skillTags = (v.skills || []).map(s => `<span class="vstag">${s}</span>`).join('');
@@ -163,15 +182,7 @@ async function handleVolunteerLogin() {
     const data = await response.json();
 
     if (response.ok) {
-              return res.json({ 
-            success: true, 
-            user: { 
-                id: volunteer[0].id, 
-                name: `${volunteer[0].first_name} ${volunteer[0].last_name}`, 
-                role: 'volunteer',
-                status: volunteer[0].status   // ← add this
-            } 
-        });
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
       window.location.href = 'volunteer_page.html';
     } else {
       alert(data.error || 'Invalid email or password.');
@@ -827,42 +838,43 @@ async function loadDashboardSummaryMetrics() {
 
 async function loadLiveSkillsDistributionGraph() {
     try {
-        const response = await fetch('https://e-sagip-production.up.railway.app/api/auth/volunteers');
-        if (!response.ok) throw new Error("Failed to fetch volunteers.");
-
-        const volunteersList = await response.json();
-
+        const response = await fetch(`${API_BASE_URL}/operations/skills-distribution`);
+        if (!response.ok) throw new Error("Failed to clear backend graph metrics handshake.");
+        
+        const skillRecords = await response.json();
         const dataMap = {};
+        let highestCount = 0;
 
-        volunteersList.forEach(v => {
-            if (v.status === 'active') {
-                const skillArray = Array.isArray(v.skills) ? v.skills : [];
-                skillArray.forEach(skillName => {
-                    const cleanName = skillName.trim();
-                    dataMap[cleanName] = (dataMap[cleanName] || 0) + 1;
-                });
+        skillRecords.forEach(record => {
+            dataMap[record.skill_name] = record.volunteer_count;
+            if (record.volunteer_count > highestCount) {
+                highestCount = record.volunteer_count;
             }
         });
 
-        const highestCount = Math.max(...Object.values(dataMap), 1);
-
-       
         document.querySelectorAll('.skills-card .skill-row').forEach(row => {
-            const labelEl  = row.querySelector('.skill-label');
-            const barEl    = row.querySelector('.skill-bar');
-            const countEl  = row.querySelector('.skill-count');
+            const labelEl = row.querySelector('.skill-label');
+            const barEl = row.querySelector('.skill-bar');
+            const countEl = row.querySelector('.skill-count');
 
             if (!labelEl || !barEl || !countEl) return;
 
             const skillName = labelEl.textContent.trim();
-            const count     = dataMap[skillName] || 0;
-            const width     = (count / highestCount) * 100;
+            const count = dataMap[skillName] || 0;
+            
+            const maxBound = highestCount > 0 ? highestCount : 1;
+            const horizontalPercentageWidth = (count / maxBound) * 100;
 
-            countEl.textContent  = count;
-            barEl.style.width    = `${width}%`;
+            countEl.textContent = count;
+            barEl.style.width = `${horizontalPercentageWidth}%`;
         });
 
     } catch (error) {
-        console.error("Failed calculating skills distribution:", error);
+        console.error("Failed parsing real-time skills metric layout bindings:", error);
     }
 }
+
+// Call the function automatically as soon as the admin portal window page loads up
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardSummaryMetrics();
+});
