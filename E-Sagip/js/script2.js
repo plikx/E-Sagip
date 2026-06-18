@@ -407,25 +407,6 @@ function closeNotApprovedModal() {
   if (modal) modal.classList.add('hidden');
 }
 
-function confirmJoin() {
-  // check localStorage flag set during registration
-  let approved = false;
-  try {
-    approved = localStorage.getItem('userApproved') === 'true';
-  } catch (e) {
-    approved = false;
-  }
-
-  if (!approved) {
-    closeJoinModal();
-    showNotApprovedModal();
-    return;
-  }
-
-  // proceed to join - demo behaviour: close modal and show success
-  closeJoinModal();
-  alert('You have successfully joined the operation. Thank you!');
-}
 
 
 
