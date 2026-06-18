@@ -149,7 +149,7 @@ function handleVolunteerLogin() {
   window.location.href = 'volunteer_page.html';
 }
 
-function handleAdminLogin() {
+async function handleAdminLogin() {
   const email    = document.getElementById('a-email')?.value.trim();
   const password = document.getElementById('a-password')?.value;
 
@@ -157,21 +157,32 @@ function handleAdminLogin() {
     alert('Please enter your admin credentials.');
     return;
   }
-  if (!email.endsWith('@gmail.com')) {
-    alert('Email must be a @gmail.com address.');
-    document.getElementById('a-email').focus();
-    return;
-  }
 
-   if (email === 'superadmin@gmail.com') {
-    window.location.href = 'superadmin_page.html';
-  }
-  // Kung hindi superadmin ang email, ididiretso sa regular admin page:
-  else {
-    window.location.href = 'admin_page.html';
+  try {
+    const response = await fetch('https://e-sagip-production.up.railway.app/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, role: 'admin' })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      if (data.user.role === 'superadmin') {
+        window.location.href = 'superadmin_page.html';
+      } else {
+        window.location.href = 'admin_page.html';
+      }
+    } else {
+      alert(data.error || 'Invalid admin credentials.');
+    }
+
+  } catch (err) {
+    alert('Could not connect to the server. Please try again.');
+    console.error(err);
   }
 }
-
 
 /* ===== ADMIN DASHBOARD ===== */
 
