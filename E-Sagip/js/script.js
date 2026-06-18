@@ -1,24 +1,19 @@
-const API_BASE_URL = '[e-sagip-production.up.railway.app](https://e-sagip-production.up.railway.app/api)';
+const API_BASE_URL = 'https://e-sagip-production.up.railway.app/api';
+
+/* ===== LOGIN PAGE ===== */
 let allVolunteers = [];
-let activeSkillFilter = 'all';
 
 async function loadVolunteers() {
     const volList = document.getElementById('vol-list');
     if (!volList) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/volunteers`);
-        if (!response.ok) throw new Error('Failed to fetch volunteers');
-
-        allVolunteers = await response.json();
+        const response = await fetch('https://e-sagip-production.up.railway.app/api/auth/volunteers');
+        allVolunteers = await response.json(); // store globally
         renderVolunteers(allVolunteers);
-        renderSkillDistribution(allVolunteers);
     } catch (err) {
         console.error('Failed to load volunteers:', err);
-        volList.innerHTML = `
-            <div class="vol-empty-state">
-                <h3>Could not load volunteers</h3>
-            </div>`;
+        volList.innerHTML = `<div class="vol-empty-state"><h3>Could not load volunteers</h3></div>`;
     }
 }
 
@@ -35,50 +30,6 @@ function renderVolunteers(volunteers) {
             </div>`;
         return;
     }
-
-    volList.innerHTML = volunteers.map(v => {
-        const initials = `${v.first_name?.[0] || ''}${v.last_name?.[0] || ''}`.toUpperCase();
-        const skillTags = (v.skills || []).map(s => `<span class="vstag">${s}</span>`).join('');
-
-        return `
-            <div class="vol-card" data-id="${v.id}">
-                <div class="vol-ops">
-                    <div class="vol-avatar">${initials}</div>
-                    <div class="vol-info">
-                        <div class="vol-name">${v.first_name} ${v.last_name} <span class="vol-badge ${v.status}">${v.status}</span></div>
-                        <div class="vol-meta">${v.address} · ${v.contact_number}</div>
-                        <div class="vol-skills-row">${skillTags}</div>
-                    </div>
-                </div>
-                <div class="vol-ops-btn">
-                    <button class="v-approve" onclick="approveVolunteer(${v.id})">✓ Approve</button>
-                    <button class="v-remove" onclick="removeVolunteer(${v.id})">🗑 Remove</button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function renderSkillDistribution(volunteers) {
-    const trackedSkills = [
-        'Basic First Aid / CPR',
-        'Medical Professional',
-        'Relief Goods Packing',
-        'Debris Clearing & Heavy Lifting',
-        'Driver (4-Wheel / Truck / Van)',
-        'Boat / Bangka Operator'
-    ];
-
-    const counts = {};
-    trackedSkills.forEach(skill => counts[skill] = 0);
-
-    volunteers.forEach(volunteer => {
-        (volunteer.skills || []).forEach(skill => {
-            if (counts.hasOwnProperty(skill)) {
-                counts[skill]++;
-            }
-        });
-    });
 
     const maxCount = Math.max(...Object.values(counts), 1);
 
