@@ -46,4 +46,44 @@ router.get('/active', async (req, res) => {
     }
 });
 
+// 3. FETCH DASHBOARD SUMMARY STATISTICS (Total Volunteers & Active Operations)
+router.get('/dashboard-stats', async (req, res) => {
+    try {
+        // Query 1: Get Total Volunteers count AND how many are currently 'active' status
+        const [[volunteerCounts]] = await db.query(`
+            SELECT 
+                COUNT(*) AS total_volunteers,
+                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_volunteers
+            FROM volunteers
+        `);
+
+        // Query 2: Get Active Operations count
+        const [[operationCounts]] = await db.query(`
+            SELECT COUNT(*) AS active_operations 
+            FROM operations 
+            WHERE status = 'active'
+        `);
+
+        // Query 3: Get how many total unique volunteers are actively enrolled in those active operations
+        const [[enrollmentCounts]] = await db.query(`
+            SELECT COUNT(DISTINCT e.volunteer_id) AS total_enrolled
+            FROM enrollments e
+            JOIN operations o ON e.operation_id = o.id
+            WHERE o.status = 'active' AND e.status = 'enrolled'
+        `);
+
+        // Combine everything into a single structured response object
+        res.json({
+            totalVolunteers: volunteerCounts.total_volunteers || 0,
+            activeVolunteers: volunteerCounts.active_volunteers || 0,
+            activeOperations: operationCounts.active_operations || 0,
+            enrolledVolunteers: enrollmentCounts.total_enrolled || 0
+        });
+
+    } catch (err) {
+        console.error("Error fetching dashboard statistics summary:", err);
+        res.status(500).json({ error: "Could not compile stats summary metrics from database." });
+    }
+});
+
 module.exports = router;
