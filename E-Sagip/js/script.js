@@ -889,3 +889,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ... rest of existing DOMContentLoaded code
 });
+//for operations
+async function completeOp(opId) {
+    if (!confirm('Mark this operation as complete?')) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/operations/${opId}/complete`, {
+            method: 'PATCH'
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Remove the card from the active list
+            const card = document.querySelector(`.op-card[data-op-id="${opId}"]`);
+            if (card) card.remove();
+
+            const statEl = document.querySelector('.stat-value-op');
+            if (statEl) statEl.textContent = Number(statEl.textContent) - 1;
+        }
+    } catch (err) {
+        console.error('Could not complete operation:', err);
+    }
+}
