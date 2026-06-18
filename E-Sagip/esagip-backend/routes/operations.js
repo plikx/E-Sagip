@@ -1,57 +1,70 @@
+// routes/operations.js
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// 1. DEPLOY NEW OPERATION ENDPOINT
+// 1. DEPLOY NEW OPERATION
 router.post('/deploy', async (req, res) => {
-    const { title, location, scheduledAt, slots, description, skills, createdBy } = req.body;
+    const { title, location, scheduledAt, slots, description, skills, otherSkill, createdBy } = req.body;
 
     try {
-        const createdBy = req.body.createdBy || 3;
+        const adminId = createdBy || 3; // ← was re-declared as "createdBy" then used as "adminId" — now fixed
 
-        //const adminId = createdBy || 1; // Fallback to Admin ID 1
-
-        // Save operation data to 'operations' table
         const [opResult] = await db.query(
             `INSERT INTO operations (title, location, scheduled_at, volunteer_slots, description, status, created_by)
              VALUES (?, ?, ?, ?, ?, 'active', ?)`,
-            [title, location, scheduledAt, slots, description, adminId]
+            [title, location, scheduledAt, slots, description || null, adminId]
         );
 
         const operationId = opResult.insertId;
 
-        // Link the required skills to this operation
+        // Link required skills
         if (skills && skills.length > 0) {
-            const [dbSkills] = await db.query('SELECT id FROM skills WHERE name IN (?)', [skills]);
+            const [dbSkills] = await db.query(
+                'SELECT id FROM skills WHERE name IN (?)',
+                [skills]
+            );
             if (dbSkills.length > 0) {
                 const opSkillMappings = dbSkills.map(s => [operationId, s.id]);
-                await db.query('INSERT INTO operation_skills (operation_id, skill_id) VALUES ?', [opSkillMappings]);
+                await db.query(
+                    'INSERT INTO operation_skills (operation_id, skill_id) VALUES ?',
+                    [opSkillMappings]
+                );
             }
         }
 
-        res.status(201).json({ success: true, message: "Operation deployed live!" });
+        // Save "Others" free-text skill if provided
+        if (otherSkill) {
+            await db.query(
+                'INSERT INTO operation_other_skills (operation_id, description) VALUES (?, ?)',
+                [operationId, otherSkill]
+            );
+        }
+
+        res.status(201).json({ success: true, operationId, message: "Operation deployed live!" });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to deploy operation." });
+        console.error('Deploy operation error:', err);
+        res.status(500).json({ error: "Failed to deploy operation.", detail: err.message });
     }
 });
 
-// 2. FETCH ACTIVE OPERATIONS (Feeds data to your frontend dashboards)
+// 2. FETCH ACTIVE OPERATIONS
 router.get('/active', async (req, res) => {
     try {
-        // This utilizes the view 'vw_operation_enrollment' from your esagip_schema.sql!
-        const [activeOps] = await db.query('SELECT * FROM vw_operation_enrollment WHERE status = "active"');
+        const [activeOps] = await db.query(
+            'SELECT * FROM vw_operation_enrollment WHERE status = "active" ORDER BY scheduled_at ASC'
+        );
         res.json(activeOps);
     } catch (err) {
-        console.error(err);
+        console.error('Fetch active ops error:', err);
         res.status(500).json({ error: "Could not fetch active operations." });
     }
 });
 
-// 3. FETCH DASHBOARD SUMMARY STATISTICS (Total Volunteers & Active Operations)
+// 3. DASHBOARD STATS
 router.get('/dashboard-stats', async (req, res) => {
     try {
-        // Query 1: Get Total Volunteers count AND how many are currently 'active' status
         const [[volunteerCounts]] = await db.query(`
             SELECT 
                 COUNT(*) AS total_volunteers,
@@ -59,14 +72,12 @@ router.get('/dashboard-stats', async (req, res) => {
             FROM volunteers
         `);
 
-        // Query 2: Get Active Operations count
         const [[operationCounts]] = await db.query(`
             SELECT COUNT(*) AS active_operations 
             FROM operations 
             WHERE status = 'active'
         `);
 
-        // Query 3: Get how many total unique volunteers are actively enrolled in those active operations
         const [[enrollmentCounts]] = await db.query(`
             SELECT COUNT(DISTINCT e.volunteer_id) AS total_enrolled
             FROM enrollments e
@@ -74,29 +85,41 @@ router.get('/dashboard-stats', async (req, res) => {
             WHERE o.status = 'active' AND e.status = 'enrolled'
         `);
 
-        // Combine everything into a single structured response object
         res.json({
-            totalVolunteers: volunteerCounts.total_volunteers || 0,
-            activeVolunteers: volunteerCounts.active_volunteers || 0,
-            activeOperations: operationCounts.active_operations || 0,
-            enrolledVolunteers: enrollmentCounts.total_enrolled || 0
+            totalVolunteers:   volunteerCounts.total_volunteers   || 0,
+            activeVolunteers:  volunteerCounts.active_volunteers  || 0,
+            activeOperations:  operationCounts.active_operations  || 0,
+            enrolledVolunteers: enrollmentCounts.total_enrolled   || 0
         });
 
     } catch (err) {
-        console.error("Error fetching dashboard statistics summary:", err);
-        res.status(500).json({ error: "Could not compile stats summary metrics from database." });
+        console.error('Dashboard stats error:', err);
+        res.status(500).json({ error: "Could not compile stats." });
     }
 });
 
-// 4. FETCH LIVE SKILLS DISTRIBUTION DATA FOR GRAPH VISUALIZATION
+// 4. SKILLS DISTRIBUTION
 router.get('/skills-distribution', async (req, res) => {
     try {
-        // Query the pre-calculated view view from esagip_schema.sql
         const [distribution] = await db.query('SELECT * FROM vw_skill_distribution');
         res.json(distribution);
     } catch (err) {
-        console.error("Error fetching skill distribution views:", err);
-        res.status(500).json({ error: "Failed to load skills distribution analytics." });
+        console.error('Skills distribution error:', err);
+        res.status(500).json({ error: "Failed to load skills distribution." });
+    }
+});
+
+// 5. MARK OPERATION AS COMPLETE
+router.patch('/:id/complete', async (req, res) => {
+    try {
+        await db.query(
+            "UPDATE operations SET status = 'completed' WHERE id = ?",
+            [req.params.id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Complete operation error:', err);
+        res.status(500).json({ error: "Could not mark operation as complete." });
     }
 });
 
