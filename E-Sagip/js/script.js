@@ -79,6 +79,10 @@ async function approveVolunteer(id) {
     try {
         await fetch(`https://e-sagip-production.up.railway.app/api/auth/volunteers/${id}/approve`, { method: 'PUT' });
         loadVolunteers();
+        // Recalculate graph statistics if approvals change inline
+        if (document.querySelector('.skills-card')) {
+            loadLiveSkillsDistributionGraph();
+        }
     } catch (err) {
         console.error('Failed to approve volunteer:', err);
         alert('Could not approve volunteer. Please try again.');
@@ -90,6 +94,10 @@ async function removeVolunteer(id) {
     try {
         await fetch(`https://e-sagip-production.up.railway.app/api/auth/volunteers/${id}`, { method: 'DELETE' });
         loadVolunteers();
+        // Recalculate graph statistics if counters change inline
+        if (document.querySelector('.skills-card')) {
+            loadLiveSkillsDistributionGraph();
+        }
     } catch (err) {
         console.error('Failed to remove volunteer:', err);
         alert('Could not remove volunteer. Please try again.');
@@ -163,15 +171,7 @@ async function handleVolunteerLogin() {
     const data = await response.json();
 
     if (response.ok) {
-              return res.json({ 
-            success: true, 
-            user: { 
-                id: volunteer[0].id, 
-                name: `${volunteer[0].first_name} ${volunteer[0].last_name}`, 
-                role: 'volunteer',
-                status: volunteer[0].status   // ← add this
-            } 
-        });
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
       window.location.href = 'volunteer_page.html';
     } else {
       alert(data.error || 'Invalid email or password.');
@@ -325,6 +325,7 @@ function goToStep(step) {
   window.scrollTo(0, 0);
 }
 
+// Keep explicit globally mapped tracking definitions intact
 function updateStepUI(step) {
   for (let i = 1; i <= 3; i++) {
     const circle = document.getElementById('sc-' + i);
@@ -565,7 +566,6 @@ function validatePostForm() {
     { id: 'post-fam',   label: 'Families Helped' },
   ];
 
-  // Clear previous errors
   document.querySelectorAll('.field-error').forEach(e => e.remove());
   document.querySelectorAll('.input-error').forEach(e => e.classList.remove('input-error'));
 
@@ -600,200 +600,7 @@ function validatePostForm() {
 }
 
 
-/* ===== DOM READY ===== */
-
-document.addEventListener('DOMContentLoaded', () => {
-  loadVolunteers();
-
-  // ── Restrict input to letters only ─────────────────────────────
-  function restrictToLetters(el) {
-    if (!el) return;
-    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' '];
-    el.addEventListener('keydown', e => {
-      if (!allowed.includes(e.key) && !/^[a-zA-Z\s]$/.test(e.key)) e.preventDefault();
-    });
-    el.addEventListener('paste', e => {
-      if (/[^a-zA-Z\s]/.test(e.clipboardData.getData('text'))) e.preventDefault();
-    });
-    el.addEventListener('drop', e => {
-      if (/[^a-zA-Z\s]/.test(e.dataTransfer.getData('text'))) e.preventDefault();
-    });
-  }
-
-  // ── Restrict input to numbers only ─────────────────────────────
-  function restrictToNumbers(el) {
-    if (!el) return;
-    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
-    el.addEventListener('keydown', e => {
-      if (!allowed.includes(e.key) && !/^[0-9]$/.test(e.key)) e.preventDefault();
-    });
-    el.addEventListener('paste', e => {
-      if (/[^0-9]/.test(e.clipboardData.getData('text'))) e.preventDefault();
-    });
-    el.addEventListener('drop', e => {
-      if (/[^0-9]/.test(e.dataTransfer.getData('text'))) e.preventDefault();
-    });
-  }
-
-  // ── Restrict input to numbers only, clamped to 1–1000 ──────────
-  function restrictToSlots(el) {
-    if (!el) return;
-    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
-    el.addEventListener('keydown', e => {
-      if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
-    });
-    el.addEventListener('input', () => {
-      const val = parseInt(el.value);
-      if (isNaN(val) || val < 1) el.value = '';
-      else if (val > 1000)       el.value = 1000;
-    });
-    el.addEventListener('paste', e => {
-      e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData('text');
-      const num  = parseInt(text.replace(/\D/g, ''));
-      if (!isNaN(num)) el.value = Math.min(Math.max(num, 1), 1000);
-    });
-  }
-
-  // ── Apply input restrictions ────────────────────────────────────
-  restrictToLetters(document.getElementById('fname'));
-  restrictToLetters(document.getElementById('lname'));
-  restrictToLetters(document.getElementById('ec-name'));
-  restrictToNumbers(document.getElementById('contact'));
-  restrictToNumbers(document.getElementById('ec-num'));
-  restrictToNumbers(document.getElementById('post-fam'));
-  restrictToSlots(document.getElementById('slots'));
-  restrictToSlots(document.getElementById('post-vol'));
-
-  // ── Resident checkbox toggle ────────────────────────────────────
-  const residentCheckbox = document.getElementById('resident');
-  if (residentCheckbox) {
-    residentCheckbox.addEventListener('change', toggleResidentAddressFields);
-  }
-  toggleResidentAddressFields();
-
-  // ── Birthdate: set max to today + wire age feedback ────────────
-  const birthdateInput = document.getElementById('birthdate');
-  if (birthdateInput) {
-    const today = new Date();
-    const yyyy  = today.getFullYear();
-    const mm    = String(today.getMonth() + 1).padStart(2, '0');
-    const dd    = String(today.getDate()).padStart(2, '0');
-    birthdateInput.max = `${yyyy}-${mm}-${dd}`;
-
-    birthdateInput.addEventListener('change', () => {
-      updateAgeFeedback(birthdateInput.value);
-    });
-  }
-
-  // ── Schedule min date (no past dates) ──────────────────────────
-  const schedInput = document.getElementById('sched');
-  if (schedInput) {
-    const now       = new Date();
-    const offset    = now.getTimezoneOffset() * 60000;
-    const local     = new Date(now - offset);
-    const formatted = local.toISOString().slice(0, 16);
-    schedInput.min  = formatted;
-  }
-
-  // ── Post date: no future dates ──────────────────────────────────
-  const postDateInput = document.getElementById('post-date');
-  if (postDateInput) {
-    const today = new Date();
-    const yyyy  = today.getFullYear();
-    const mm    = String(today.getMonth() + 1).padStart(2, '0');
-    const dd    = String(today.getDate()).padStart(2, '0');
-    postDateInput.max = `${yyyy}-${mm}-${dd}`;
-  }
-
-
-  // ── Others checkbox toggle ──────────────────────────────────────
-  const othersCheckbox = document.getElementById('skill-others');
-  const othersDiv      = document.getElementById('others-div');
-  if (othersCheckbox && othersDiv) {
-    othersCheckbox.addEventListener('change', () => {
-      othersDiv.classList.toggle('hidden', !othersCheckbox.checked);
-    });
-  }
-
-  const noneCheckbox = document.querySelector('#skill-tags input[value="None"]');
-  if (noneCheckbox) {
-    noneCheckbox.addEventListener('change', () => {
-      const otherCheckboxes = document.querySelectorAll('#skill-tags input[type="checkbox"]:not([value="None"])');
-      otherCheckboxes.forEach(cb => {
-        cb.checked  = false;
-        cb.disabled = noneCheckbox.checked;
-        const tag = cb.closest('label')?.querySelector('.skill-tag');
-        if (tag) tag.style.color = noneCheckbox.checked ? 'var(--text-muted)' : '';
-      });
-      if (noneCheckbox.checked) {
-        document.getElementById('others-div')?.classList.add('hidden');
-      }
-    });
-
-    document.querySelectorAll('#skill-tags input[type="checkbox"]:not([value="None"])').forEach(cb => {
-      cb.addEventListener('change', () => {
-        if (cb.checked) {
-          noneCheckbox.checked = false;
-          document.querySelectorAll('#skill-tags input[type="checkbox"]:not([value="None"])').forEach(other => {
-            const tag = other.closest('label')?.querySelector('.skill-tag');
-            if (tag) tag.style.color = '';
-          });
-        }
-      });
-    });
-  }
-
-  // ── Registration form submit ────────────────────────────────────
-  const registrationForm = document.getElementById('registration-form');
-  if (registrationForm) {
-    registrationForm.addEventListener('submit', event => {
-      event.preventDefault();
-      if (currentStep === 3)      completeRegistration();
-      else if (currentStep === 1) goToStep(2);
-      else if (currentStep === 2) goToStep(3);
-    });
-  }
-
-  // ── Feed Post Modal ─────────────────────────────────────────────
-
-  const addPostBtn = document.getElementById('addPostBtn');
-  if (addPostBtn) {
-    addPostBtn.addEventListener('click', openPostModal);
-  }
-
-  const publishBtn = document.getElementById('publishPost');
-  if (publishBtn) {
-    publishBtn.addEventListener('click', () => {
-      if (validatePostForm()) {
-        publishPost();
-        closePostModal();
-      }
-    });
-  }
-
-  const cancelBtn = document.getElementById('cancelPost');
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', closePostModal);
-  }
-
-  const closeBtn = document.querySelector('#postModal .close-btn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closePostModal);
-  }
-
-  ['postTitle', 'post-date', 'post-loc', 'post-img', 'post-award', 'post-cap', 'post-vol', 'post-fam']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener(el.type === 'file' ? 'change' : 'input', () => {
-        el.classList.remove('input-error');
-        const err = el.parentNode.querySelector('.field-error');
-        if (err) err.remove();
-      });
-    });
-
-});
+/* ===== BACKEND ANALYSIS INTERFACES ===== */
 
 async function loadDashboardSummaryMetrics() {
     try {
@@ -802,21 +609,18 @@ async function loadDashboardSummaryMetrics() {
         
         const stats = await response.json();
 
-        // 1. Update the Volunteer Card Elements
         const totalVolElement = document.querySelector('.stat-value-v');
         const activeVolSubElement = document.querySelector('.stat-card:nth-child(1) .stat-sub');
         
         if (totalVolElement) totalVolElement.textContent = stats.totalVolunteers;
         if (activeVolSubElement) activeVolSubElement.textContent = `${stats.activeVolunteers} active`;
 
-        // 2. Update the Active Operations Card Elements
         const activeOpsElement = document.querySelector('.stat-value-op');
         const enrolledSubElement = document.querySelector('.stat-card:nth-child(2) .stat-sub');
 
         if (activeOpsElement) activeOpsElement.textContent = stats.activeOperations;
         if (enrolledSubElement) enrolledSubElement.textContent = `${stats.enrolledVolunteers} enrolled`;
 
-        // 3. Update the decorative footer layout text variable count if it exists
         const footerVolCounter = document.getElementById('vol-num');
         if (footerVolCounter) footerVolCounter.textContent = stats.totalVolunteers;
 
@@ -831,7 +635,6 @@ async function loadLiveSkillsDistributionGraph() {
         if (!response.ok) throw new Error("Failed to fetch volunteers.");
 
         const volunteersList = await response.json();
-
         const dataMap = {};
 
         volunteersList.forEach(v => {
@@ -846,7 +649,6 @@ async function loadLiveSkillsDistributionGraph() {
 
         const highestCount = Math.max(...Object.values(dataMap), 1);
 
-       
         document.querySelectorAll('.skills-card .skill-row').forEach(row => {
             const labelEl  = row.querySelector('.skill-label');
             const barEl    = row.querySelector('.skill-bar');
@@ -866,3 +668,206 @@ async function loadLiveSkillsDistributionGraph() {
         console.error("Failed calculating skills distribution:", error);
     }
 }
+
+
+/* ===== UNIFIED SYSTEM DOM INITIALIZATION LOOP ===== */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Trigger universal operations directories if they exist on the specific current window view layout
+    if (document.getElementById('vol-list')) {
+        loadVolunteers();
+    }
+    
+    if (document.querySelector('.stat-value-v')) {
+        loadDashboardSummaryMetrics();
+    }
+    
+    if (document.querySelector('.skills-card')) {
+        loadLiveSkillsDistributionGraph();
+    }
+
+    // ── Restrict input to letters only ─────────────────────────────
+    function restrictToLetters(el) {
+        if (!el) return;
+        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' '];
+        el.addEventListener('keydown', e => {
+            if (!allowed.includes(e.key) && !/^[a-zA-Z\s]$/.test(e.key)) e.preventDefault();
+        });
+        el.addEventListener('paste', e => {
+            if (/[^a-zA-Z\s]/.test(e.clipboardData.getData('text'))) e.preventDefault();
+        });
+        el.addEventListener('drop', e => {
+            if (/[^a-zA-Z\s]/.test(e.dataTransfer.getData('text'))) e.preventDefault();
+        });
+    }
+
+    // ── Restrict input to numbers only ─────────────────────────────
+    function restrictToNumbers(el) {
+        if (!el) return;
+        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
+        el.addEventListener('keydown', e => {
+            if (!allowed.includes(e.key) && !/^[0-9]$/.test(e.key)) e.preventDefault();
+        });
+        el.addEventListener('paste', e => {
+            if (/[^0-9]/.test(e.clipboardData.getData('text'))) e.preventDefault();
+        });
+        el.addEventListener('drop', e => {
+            if (/[^0-9]/.test(e.dataTransfer.getData('text'))) e.preventDefault();
+        });
+    }
+
+    // ── Restrict input to numbers only, clamped to 1–1000 ──────────
+    function restrictToSlots(el) {
+        if (!el) return;
+        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+        el.addEventListener('keydown', e => {
+            if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
+        });
+        el.addEventListener('input', () => {
+            const val = parseInt(el.value);
+            if (isNaN(val) || val < 1) el.value = '';
+            else if (val > 1000)       el.value = 1000;
+        });
+        el.addEventListener('paste', e => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+            const num  = parseInt(text.replace(/\D/g, ''));
+            if (!isNaN(num)) el.value = Math.min(Math.max(num, 1), 1000);
+        });
+    }
+
+    // ── Apply input restrictions ────────────────────────────────────
+    restrictToLetters(document.getElementById('fname'));
+    restrictToLetters(document.getElementById('lname'));
+    restrictToLetters(document.getElementById('ec-name'));
+    restrictToNumbers(document.getElementById('contact'));
+    restrictToNumbers(document.getElementById('ec-num'));
+    restrictToNumbers(document.getElementById('post-fam'));
+    restrictToSlots(document.getElementById('slots'));
+    restrictToSlots(document.getElementById('post-vol'));
+
+    // ── Resident checkbox toggle ────────────────────────────────────
+    const residentCheckbox = document.getElementById('resident');
+    if (residentCheckbox) {
+        residentCheckbox.addEventListener('change', toggleResidentAddressFields);
+    }
+
+    // ── Birthdate: set max to today + wire age feedback ────────────
+    const birthdateInput = document.getElementById('birthdate');
+    if (birthdateInput) {
+        const today = new Date();
+        const yyyy  = today.getFullYear();
+        const mm    = String(today.getMonth() + 1).padStart(2, '0');
+        const dd    = String(today.getDate()).padStart(2, '0');
+        birthdateInput.max = `${yyyy}-${mm}-${dd}`;
+
+        birthdateInput.addEventListener('change', () => {
+            updateAgeFeedback(birthdateInput.value);
+        });
+    }
+
+    // ── Schedule min date (no past dates) ──────────────────────────
+    const schedInput = document.getElementById('sched');
+    if (schedInput) {
+        const now       = new Date();
+        const offset    = now.getTimezoneOffset() * 60000;
+        const local     = new Date(now - offset);
+        const formatted = local.toISOString().slice(0, 16);
+        schedInput.min  = formatted;
+    }
+
+    // ── Post date: no future dates ──────────────────────────────────
+    const postDateInput = document.getElementById('post-date');
+    if (postDateInput) {
+        const today = new Date();
+        const yyyy  = today.getFullYear();
+        const mm    = String(today.getMonth() + 1).padStart(2, '0');
+        const dd    = String(today.getDate()).padStart(2, '0');
+        postDateInput.max = `${yyyy}-${mm}-${dd}`;
+    }
+
+    // ── Others checkbox toggle ──────────────────────────────────────
+    const othersCheckbox = document.getElementById('skill-others');
+    const othersDiv      = document.getElementById('others-div');
+    if (othersCheckbox && othersDiv) {
+        othersCheckbox.addEventListener('change', () => {
+            othersDiv.classList.toggle('hidden', !othersCheckbox.checked);
+        });
+    }
+
+    const noneCheckbox = document.querySelector('#skill-tags input[value="None"]');
+    if (noneCheckbox) {
+        noneCheckbox.addEventListener('change', () => {
+            const otherCheckboxes = document.querySelectorAll('#skill-tags input[type="checkbox"]:not([value="None"])');
+            otherCheckboxes.forEach(cb => {
+                cb.checked  = false;
+                cb.disabled = noneCheckbox.checked;
+                const tag = cb.closest('label')?.querySelector('.skill-tag');
+                if (tag) tag.style.color = noneCheckbox.checked ? 'var(--text-muted)' : '';
+            });
+            if (noneCheckbox.checked) {
+                document.getElementById('others-div')?.classList.add('hidden');
+            }
+        });
+
+        document.querySelectorAll('#skill-tags input[type="checkbox"]:not([value="None"])').forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (cb.checked) {
+                    noneCheckbox.checked = false;
+                    document.querySelectorAll('#skill-tags input[type="checkbox"]:not([value="None"])').forEach(other => {
+                        const tag = other.closest('label')?.querySelector('.skill-tag');
+                        if (tag) tag.style.color = '';
+                    });
+                }
+            });
+        });
+    }
+
+    // ── Registration form submit ────────────────────────────────────
+    const registrationForm = document.getElementById('registration-form');
+    if (registrationForm) {
+        registrationForm.addEventListener('submit', event => {
+            event.preventDefault();
+            if (currentStep === 3)      completeRegistration();
+            else if (currentStep === 1) goToStep(2);
+            else if (currentStep === 2) goToStep(3);
+        });
+    }
+
+    // ── Feed Post Modal ─────────────────────────────────────────────
+    const addPostBtn = document.getElementById('addPostBtn');
+    if (addPostBtn) {
+        addPostBtn.addEventListener('click', openPostModal);
+    }
+
+    const publishBtn = document.getElementById('publishPost');
+    if (publishBtn) {
+        publishBtn.addEventListener('click', () => {
+            if (validatePostForm()) {
+                publishPost();
+                closePostModal();
+            }
+        });
+    }
+
+    const cancelBtn = document.getElementById('cancelPost');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closePostModal);
+    }
+
+    const closeBtn = document.querySelector('#postModal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closePostModal);
+    }
+
+    ['postTitle', 'post-date', 'post-loc', 'post-img', 'post-award', 'post-cap', 'post-vol', 'post-fam']
+    .forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener(el.type === 'file' ? 'change' : 'input', () => {
+            el.classList.remove('input-error');
+            const err = el.parentNode.querySelector('.field-error');
+            if (err) err.remove();
+        });
+    });
+});
