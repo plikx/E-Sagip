@@ -24,13 +24,14 @@ function renderVolunteers(volunteers) {
             <div class="vol-empty-state">
                 <div class="empty-icon">👥</div>
                 <h3>No Volunteers found</h3>
-                <p>Try a different search.</p>
+                <p>Try a different search or filter.</p>
             </div>`;
         return;
     }
 
     volList.innerHTML = volunteers.map(v => {
         const initials = (v.first_name[0] || '') + (v.last_name[0] || '');
+        const skillTags = (v.skills || []).map(s => `<span class="vstag">${s}</span>`).join('');
         return `
             <div class="vol-card" data-id="${v.id}">
                 <div class="vol-ops">
@@ -38,6 +39,7 @@ function renderVolunteers(volunteers) {
                     <div class="vol-info">
                         <div class="vol-name">${v.first_name} ${v.last_name} <span class="vol-badge ${v.status}">${v.status}</span></div>
                         <div class="vol-meta">${v.address} · ${v.contact_number}</div>
+                        <div class="vol-skills-row">${skillTags}</div>
                     </div>
                 </div>
                 <div class="vol-ops-btn">
@@ -49,21 +51,24 @@ function renderVolunteers(volunteers) {
     }).join('');
 }
 
+let activeSkillFilter = 'all';
+
 function filterVolunteers() {
     const searchInput = document.getElementById('vol-search');
-    if (!searchInput) return;
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-    const query = searchInput.value.trim().toLowerCase();
+    let filtered = allVolunteers;
 
-    if (!query) {
-        renderVolunteers(allVolunteers);
-        return;
+    if (activeSkillFilter !== 'all') {
+        filtered = filtered.filter(v => (v.skills || []).includes(activeSkillFilter));
     }
 
-    const filtered = allVolunteers.filter(v => {
-        const fullName = `${v.first_name} ${v.last_name}`.toLowerCase();
-        return fullName.includes(query);
-    });
+    if (query) {
+        filtered = filtered.filter(v => {
+            const fullName = `${v.first_name} ${v.last_name}`.toLowerCase();
+            return fullName.includes(query);
+        });
+    }
 
     renderVolunteers(filtered);
 }
