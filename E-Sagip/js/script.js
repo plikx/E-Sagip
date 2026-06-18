@@ -821,11 +821,11 @@ async function loadLiveSkillsDistributionGraph() {
     try {
         const response = await fetch('https://e-sagip-production.up.railway.app/api/auth/volunteers');
         if (!response.ok) throw new Error("Failed to fetch volunteers.");
-        
+
         const volunteersList = await response.json();
-        
+
         const dataMap = {};
-        
+
         volunteersList.forEach(v => {
             if (v.status === 'active') {
                 const skillArray = Array.isArray(v.skills) ? v.skills : [];
@@ -837,63 +837,24 @@ async function loadLiveSkillsDistributionGraph() {
         });
 
         const highestCount = Math.max(...Object.values(dataMap), 1);
-        const container = document.querySelector('.skills-card');
-        if (!container) return;
 
-        // Remove existing static skill rows
-        container.querySelectorAll('.skill-row').forEach(row => row.remove());
+       
+        document.querySelectorAll('.skills-card .skill-row').forEach(row => {
+            const labelEl  = row.querySelector('.skill-label');
+            const barEl    = row.querySelector('.skill-bar');
+            const countEl  = row.querySelector('.skill-count');
 
-        // Dynamically build a row for every skill found
-        Object.entries(dataMap)
-            .sort((a, b) => b[1] - a[1]) // sort highest to lowest
-            .forEach(([skillName, count]) => {
-                const width = (count / highestCount) * 100;
-                const row = document.createElement('div');
-                row.className = 'skill-row';
-                row.innerHTML = `
-                    <span class="skill-label">${skillName}</span>
-                    <div class="skill-bar-track">
-                        <div class="skill-bar" style="width: ${width}%"></div>
-                    </div>
-                    <span class="skill-count">${count}</span>
-                `;
-                container.appendChild(row);
-            });
+            if (!labelEl || !barEl || !countEl) return;
+
+            const skillName = labelEl.textContent.trim();
+            const count     = dataMap[skillName] || 0;
+            const width     = (count / highestCount) * 100;
+
+            countEl.textContent  = count;
+            barEl.style.width    = `${width}%`;
+        });
 
     } catch (error) {
         console.error("Failed calculating skills distribution:", error);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // existing setup code (input restrictions, checkboxes, etc.) ...
-
-    // Dashboard
-    loadDashboardSummaryMetrics();
-    loadLiveSkillsDistributionGraph();
-
-    // Volunteers page
-    loadVolunteers();
-
-    // ... rest of existing DOMContentLoaded code
-});
-//for operations
-async function completeOp(opId) {
-    if (!confirm('Mark this operation as complete?')) return;
-    try {
-        const res = await fetch(`${API_BASE_URL}/operations/${opId}/complete`, {
-            method: 'PATCH'
-        });
-        const data = await res.json();
-        if (data.success) {
-            // Remove the card from the active list
-            const card = document.querySelector(`.op-card[data-op-id="${opId}"]`);
-            if (card) card.remove();
-
-            const statEl = document.querySelector('.stat-value-op');
-            if (statEl) statEl.textContent = Number(statEl.textContent) - 1;
-        }
-    } catch (err) {
-        console.error('Could not complete operation:', err);
     }
 }
