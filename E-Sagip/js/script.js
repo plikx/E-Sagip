@@ -877,4 +877,5 @@ async function loadLiveSkillsDistributionGraph() {
 // Call the function automatically as soon as the admin portal window page loads up
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboardSummaryMetrics();
+    loadLiveSkillsDistributionGraph();
 });
