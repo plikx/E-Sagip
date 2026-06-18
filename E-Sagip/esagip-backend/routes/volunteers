@@ -1,83 +1,22 @@
 router.get('/volunteers', async (req, res) => {
-
-    const { skill } = req.query; // Extract skill from query string: e.g. /volunteers?skill=Medical Professional
-
-
-
     try {
-
-        let query = `
-
+        const [volunteers] = await db.query(`
             SELECT v.id, v.first_name, v.last_name, v.address, v.contact_number, v.email, v.status,
-
                    GROUP_CONCAT(s.name) AS skills
-
             FROM volunteers v
-
             LEFT JOIN volunteer_skills vs ON v.id = vs.volunteer_id
-
             LEFT JOIN skills s ON vs.skill_id = s.id
-
-        `;
-
-        
-
-        let queryParams = [];
-
-
-
-        // Apply skill filtering in SQL if defined and not set to 'all'
-
-        if (skill && skill !== 'all') {
-
-            query += `
-
-                WHERE v.id IN (
-
-                    SELECT vs2.volunteer_id 
-
-                    FROM volunteer_skills vs2
-
-                    JOIN skills s2 ON vs2.skill_id = s2.id
-
-                    WHERE s2.name = ?
-
-                )
-
-            `;
-
-            queryParams.push(skill);
-
-        }
-
-
-
-        query += ` GROUP BY v.id`;
-
-
-
-        const [volunteers] = await db.query(query, queryParams);
-
-
+            GROUP BY v.id
+        `);
 
         const formatted = volunteers.map(v => ({
-
             ...v,
-
             skills: v.skills ? v.skills.split(',') : []
-
         }));
 
-
-
         res.json(formatted);
-
     } catch (err) {
-
         console.error(err);
-
         res.status(500).json({ error: "Could not fetch volunteers." });
-
     }
-
 });
