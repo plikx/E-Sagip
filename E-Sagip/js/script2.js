@@ -86,57 +86,87 @@ function initBrgyMap() {
   const crossIcon  = '<path d="M22 12h-4"/><path d="M6 12H2"/><path d="M12 6V2"/><path d="M12 22v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/>';
   const dropIcon   = '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>';
 
-  // ── Location data ────────────────────────────────────────────────
-  const locations = [
-    // Barangay Hall
-    {
-      lat: 14.5998, lng: 121.0078,
-      color: 'maroon', svg: homeIcon,
-      name: 'Barangay 628 Hall',
-      desc: 'Barangay Hall · Mon–Fri 8 AM–5 PM'
-    },
-    // Evacuation centres
-    {
-      lat: 14.6012, lng: 121.0095,
-      color: 'green', svg: homeIcon,
-      name: 'Sta. Mesa National High School',
-      desc: 'Primary Evacuation Center · Capacity: 500 persons'
-    },
-    {
-      lat: 14.5990, lng: 121.0065,
-      color: 'green', svg: homeIcon,
-      name: 'Brgy. 628 Covered Court',
-      desc: 'Secondary Evacuation Center · Capacity: 200 persons'
-    },
-    {
-      lat: 14.5975, lng: 121.0110,
-      color: 'green', svg: homeIcon,
-      name: 'Manila Science High School',
-      desc: 'Tertiary Evacuation Center · Capacity: 300 persons'
-    },
-    // Fire station
-    {
-      lat: 14.6005, lng: 121.0055,
-      color: 'red', svg: flameIcon,
-      name: 'BFP Sta. Mesa Fire Station',
-      desc: 'Bureau of Fire Protection · (02) 8714-0000'
-    },
-    // Health facility
-    {
-      lat: 14.5985, lng: 121.0100,
-      color: 'blue', svg: crossIcon,
-      name: 'Barangay Health Center',
-      desc: 'Health Facility · Barangay 628'
-    },
-    // Water / Estero
-    {
-      lat: 14.5970, lng: 121.0075,
-      color: 'blue', svg: dropIcon,
-      name: 'Estero de Paco',
-      desc: 'Water / Estero · High flood-risk area'
-    }
-  ];
+ // ── Location data ────────────────────────────────────────────────
+const locations = [
 
+  // Evacuation Centers
+{
+  lat: 14.5999272,
+  lng: 121.0090391,
+  color: "green",
+  svg: homeIcon,
+  name: "Barangay 628 Zone 63 District VI",
+  desc: "Primary Evacuation Center"
+},
+
+{
+  lat: 14.600099,
+  lng: 121.007305,
+  color: "green",
+  svg: homeIcon,
+  name: "Barangay 628 Zone 63 SK Hall",
+  desc: "Secondary Evacuation Center"
+},
+
+{
+  lat: 14.599306,
+  lng: 121.004976,
+  color: "green",
+  svg: homeIcon,
+  name: "PUP NDC Basketball Court",
+  desc: "Tertiary Evacuation Center"
+},
+
+{
+  lat: 14.600524,
+  lng: 121.0037302,
+  color: "green",
+  svg: homeIcon,
+  name: "Pio Del Pilar Elementary School",
+  desc: "Tertiary Evacuation Center"
+},
+
+{
+  lat: 14.601635,
+  lng: 121.007881,
+  color: "green",
+  svg: homeIcon,
+  name: "Hipodromo Street",
+  desc: "Tertiary Evacuation Center"
+},
+
+  // Fire Station
+  {
+    lat: 14.591978,
+    lng: 121.011946,
+    color: "red",
+    svg: flameIcon,
+    name: "Pandacan Fire Station",
+    desc: "Fire Station"
+  },
+
+  // Health Facility
+  {
+    lat: 14.6004495,
+    lng: 121.0129469,
+    color: "blue",
+    svg: crossIcon,
+    name: "Esperanza Health Center",
+    desc: "Health Facility"
+  },
+
+  // Water / Flood Risk
+  {
+    lat: 14.5970,
+    lng: 121.0075,
+    color: "blue",
+    svg: dropIcon,
+    name: "Pasig River",
+    desc: "Flood Risk Area"
+  }
+
+];
+  
   locations.forEach(loc => {
     const icon = makePinIcon(loc.color, loc.svg);
     L.marker([loc.lat, loc.lng], { icon })
