@@ -1,6 +1,3 @@
-
-
-
 /* ===== CLIENT: COMMUNITY INFORMATION PAGE ===== */
 
 /**
