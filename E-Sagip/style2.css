@@ -1747,87 +1747,157 @@ color:#666;
 
 /* Modal */
 
-.superadmin-page .modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:9999;
+.superadmin-page .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
 }
 
-.superadmin-page .hidden{
-    display:none;
+.superadmin-page .hidden {
+    display: none;
 }
 
-.superadmin-page .modal-content{
-    width:480px;
-    background:#fff;
-    border-radius:18px;
-    padding:28px;
-    box-shadow:0 20px 40px rgba(0,0,0,.18);
+.superadmin-page .modal-content {
+    width: 480px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.18);
+    max-height: 85vh;        /* ✅ limit height to viewport */
+    display: flex;           /* ✅ flex column layout */
+    flex-direction: column;
+    overflow: hidden;        /* ✅ clip rounded corners */
 }
 
-.superadmin-page .modal-content h2{
-    margin-bottom:24px;
-    color:#850021;
+.modal-content .modal-header {
+    display: flex;
+    flex-direction: row;          /* ✅ title and X on same line */
+    align-items: center;
+    justify-content: space-between; /* ✅ pushes X to the right */
+    flex-shrink: 0;
+    margin-bottom: 20px;
 }
 
-.superadmin-page .form-group{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    margin-bottom:18px;
+.modal-content .modal-header h2 {
+    margin-bottom: 0;
+    color: #850021;
 }
 
-.superadmin-page .form-group label{
-    font-weight:600;
-    color:#444;
+.modal-content .modal-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.modal-content .modal-header .close-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.modal-content .modal-q {
+    overflow-y: auto;        
+    flex: 1;                 
+    padding-right: 4px;      
+}
+
+.superadmin-page .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.superadmin-page .form-group label {
+    font-weight: bold;
+    color: var(--primary);
 }
 
 .superadmin-page .form-group input,
-.superadmin-page .form-group textarea{
-    width:100%;
-    padding:12px 14px;
-    border:1px solid #ddd;
-    border-radius:12px;
-    outline:none;
-    font-size:14px;
+.superadmin-page .form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(124, 121, 122, 0.377);
+    background-color: rgba(245, 218, 223, 0.699);
+    border-radius: 12px;
+    outline: none;
+    font-size: 14px;
+    box-sizing: border-box; 
 }
 
-.superadmin-page .form-group textarea{
-    resize:none;
+.superadmin-page .form-group input::placeholder,
+.superadmin-page .form-group textarea::placeholder {
+    color: var(--gray);       
+    opacity: 1;           
+    font-size: 13px;
 }
 
-.superadmin-page .modal-buttons{
-    display:flex;
-    justify-content:flex-end;
-    gap:12px;
-    margin-top:16px;
+.superadmin-page .form-group input:focus,
+.superadmin-page .form-group textarea:focus {
+    border-color: #1d1b1b46;                          
+    background-color: rgba(245, 218, 223, 0.4);   
 }
 
-.superadmin-page .secondary-btn{
-    padding:10px 22px;
-    border:1px solid #ccc;
-    border-radius:999px;
-    background:#fff;
-    cursor:pointer;
+.superadmin-page .form-group textarea {
+    resize: none;
 }
 
-.superadmin-page .primary-btn{
-    padding:10px 22px;
-    border:none;
-    border-radius:999px;
-    background:#850021;
-    color:#fff;
-    cursor:pointer;
+.vol-fam-container {
+
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  gap: 10px;
 }
 
-.superadmin-page .primary-btn:hover{
-    background:#a0002c;
+.superadmin-page .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    flex-shrink: 0;         
 }
 
+.superadmin-page .secondary-btn {
+    padding: 10px 22px;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.superadmin-page .primary-btn {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    background: #850021;
+    color: #fff;
+    cursor: pointer;
+}
+
+.superadmin-page .primary-btn:hover {
+    background: #a0002c;
+}
+
+.superadmin-page .input-error {
+    border-color: #c0392b !important;
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+    background-color: rgba(255, 220, 220, 0.5) !important;
+}
+
+.superadmin-page .field-error {
+    color: #c0392b;
+    font-size: 12px;
+    margin-top: 2px;
+}
 
 /* ======================================================
    SUPERADMIN COMMUNITY HEADER
