@@ -1385,7 +1385,7 @@ a {
 }
 
 .feed-hero-overlay {
-  background-image: url('Images/outreach.jpg');
+  background-image: url('../images/outreach.jpg');
   background-size: cover;
   background-position: center;
   height: 100%;
