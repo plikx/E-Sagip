@@ -360,59 +360,6 @@ if (adminCount) {
     adminCount.textContent = `${admins.length} administrator account${admins.length === 1 ? "" : "s"}`;
 }
 
-/* ===========================
-   ADD POST MODAL
-=========================== */
-
-const addPostBtn = document.getElementById("addPostBtn");
-const postModal = document.getElementById("postModal");
-const cancelPost = document.getElementById("cancelPost");
-const publishPost = document.getElementById("publishPost");
-
-if(addPostBtn){
-
-    addPostBtn.addEventListener("click", () => {
-        postModal.classList.remove("hidden");
-    });
-
-}
-
-if(cancelPost){
-
-    cancelPost.addEventListener("click", () => {
-        postModal.classList.add("hidden");
-    });
-
-}
-
-if(postModal){
-
-    postModal.addEventListener("click", (e) => {
-
-        if(e.target === postModal){
-            postModal.classList.add("hidden");
-        }
-
-    });
-
-}
-
-if(publishPost){
-
-    publishPost.addEventListener("click", () => {
-
-        alert("Community post published.");
-
-        document.getElementById("postTitle").value = "";
-        document.getElementById("postDescription").value = "";
-        document.getElementById("postImage").value = "";
-
-        postModal.classList.add("hidden");
-
-    });
-
-}
-
 /* ==========================================
    SUPERADMIN COMMUNITY EDIT
 ========================================== */
