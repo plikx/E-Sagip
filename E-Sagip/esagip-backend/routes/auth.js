@@ -80,15 +80,34 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 3. FETCH ALL VOLUNTEERS (for Admin Dashboard)
+// 3. FETCH ALL VOLUNTEERS WITH THEIR RESPECTIVE SKILLS (for Admin Dashboard)
 router.get('/volunteers', async (req, res) => {
     try {
-        const [volunteers] = await db.query(
-            'SELECT id, first_name, last_name, address, contact_number, email, status FROM volunteers'
-        );
-        res.json(volunteers);
+        const [volunteers] = await db.query(`
+            SELECT 
+                v.id, 
+                v.first_name, 
+                v.last_name, 
+                v.address, 
+                v.contact_number, 
+                v.email, 
+                v.status,
+                GROUP_CONCAT(s.name) AS skills_list
+            FROM volunteers v
+            LEFT JOIN volunteer_skills vs ON v.id = vs.volunteer_id
+            LEFT JOIN skills s ON vs.skill_id = s.id
+            GROUP BY v.id
+        `);
+
+        // Format the grouped text string back into a clean array for your frontend mapping rules
+        const formattedVolunteers = volunteers.map(v => ({
+            ...v,
+            skills: v.skills_list ? v.skills_list.split(',') : []
+        }));
+
+        res.json(formattedVolunteers);
     } catch (err) {
-        console.error(err);
+        console.error("Failed compiling relational volunteer directory logs:", err);
         res.status(500).json({ error: "Could not fetch volunteers." });
     }
 });
