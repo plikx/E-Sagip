@@ -7,7 +7,9 @@ router.post('/deploy', async (req, res) => {
     const { title, location, scheduledAt, slots, description, skills, createdBy } = req.body;
 
     try {
-        const adminId = createdBy || 1; // Fallback to Admin ID 1
+        const createdBy = req.body.createdBy || 3;
+
+        //const adminId = createdBy || 1; // Fallback to Admin ID 1
 
         // Save operation data to 'operations' table
         const [opResult] = await db.query(
