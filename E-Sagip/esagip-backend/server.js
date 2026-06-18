@@ -20,3 +20,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`E-Sagip Backend Bridge online on port ${PORT}`);
 });
+
+app.get('/', (req, res) => res.send('OK'));
