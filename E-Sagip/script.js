@@ -1,3 +1,5 @@
+const API_BASE_URL = 'https://e-sagip-production.up.railway.app/api';
+
 /* ===== LOGIN PAGE ===== */
 let allVolunteers = [];
 
@@ -713,4 +715,39 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+});
+
+async function loadDashboardSummaryMetrics() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/operations/dashboard-stats`);
+        if (!response.ok) throw new Error("Failed to clear backend metrics handshake.");
+        
+        const stats = await response.json();
+
+        // 1. Update the Volunteer Card Elements
+        const totalVolElement = document.querySelector('.stat-value-v');
+        const activeVolSubElement = document.querySelector('.stat-card:nth-child(1) .stat-sub');
+        
+        if (totalVolElement) totalVolElement.textContent = stats.totalVolunteers;
+        if (activeVolSubElement) activeVolSubElement.textContent = `${stats.activeVolunteers} active`;
+
+        // 2. Update the Active Operations Card Elements
+        const activeOpsElement = document.querySelector('.stat-value-op');
+        const enrolledSubElement = document.querySelector('.stat-card:nth-child(2) .stat-sub');
+
+        if (activeOpsElement) activeOpsElement.textContent = stats.activeOperations;
+        if (enrolledSubElement) enrolledSubElement.textContent = `${stats.enrolledVolunteers} enrolled`;
+
+        // 3. Update the decorative footer layout text variable count if it exists
+        const footerVolCounter = document.getElementById('vol-num');
+        if (footerVolCounter) footerVolCounter.textContent = stats.totalVolunteers;
+
+    } catch (error) {
+        console.error("Dashboard metric visualization tracking failed:", error);
+    }
+}
+
+// Call the function automatically as soon as the admin portal window page loads up
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardSummaryMetrics();
 });
