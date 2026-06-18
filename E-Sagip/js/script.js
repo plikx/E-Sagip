@@ -31,25 +31,6 @@ function renderVolunteers(volunteers) {
         return;
     }
 
-    const maxCount = Math.max(...Object.values(counts), 1);
-
-    document.querySelectorAll('.skills-card .skill-row').forEach(row => {
-        const labelEl = row.querySelector('.skill-label');
-        const barEl = row.querySelector('.skill-bar');
-        const countEl = row.querySelector('.skill-count');
-
-        if (!labelEl || !barEl || !countEl) return;
-
-        const skillName = labelEl.textContent.trim();
-        const count = counts[skillName] || 0;
-        const width = (count / maxCount) * 100;
-
-        countEl.textContent = count;
-        barEl.style.width = `${width}%`;
-    });
-}
-
-
     volList.innerHTML = volunteers.map(v => {
         const initials = (v.first_name[0] || '') + (v.last_name[0] || '');
         const skillTags = (v.skills || []).map(s => `<span class="vstag">${s}</span>`).join('');
@@ -896,8 +877,15 @@ async function loadLiveSkillsDistributionGraph() {
     }
 }
 
-// Call the function automatically as soon as the admin portal window page loads up
 document.addEventListener('DOMContentLoaded', () => {
+    // existing setup code (input restrictions, checkboxes, etc.) ...
+
+    // Dashboard
     loadDashboardSummaryMetrics();
     loadLiveSkillsDistributionGraph();
+
+    // Volunteers page
+    loadVolunteers();
+
+    // ... rest of existing DOMContentLoaded code
 });
