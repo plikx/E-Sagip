@@ -1,3 +1,6 @@
+
+
+
 /* ===== CLIENT: COMMUNITY INFORMATION PAGE ===== */
 
 /**
@@ -426,3 +429,9 @@ function confirmJoin() {
   closeJoinModal();
   alert('You have successfully joined the operation. Thank you!');
 }
+
+
+
+
+
+
