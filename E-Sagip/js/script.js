@@ -819,61 +819,49 @@ async function loadDashboardSummaryMetrics() {
 
 async function loadLiveSkillsDistributionGraph() {
     try {
-        // Step 1: Use the working endpoint that already aggregates volunteer profiles and skills
         const response = await fetch('https://e-sagip-production.up.railway.app/api/auth/volunteers');
-        if (!response.ok) throw new Error("Failed to clear graph data sync.");
+        if (!response.ok) throw new Error("Failed to fetch volunteers.");
         
         const volunteersList = await response.json();
         
-        // Step 2: Initialize counting map structures
         const dataMap = {};
-        let highestCount = 0;
         
-        // Step 3: Loop through every single volunteer record
         volunteersList.forEach(v => {
-            // ONLY count them if they are approved ('active')
             if (v.status === 'active') {
-                // Ensure we have a valid skills array to parse
-                let skillArray = [];
-                if (Array.isArray(v.skills)) {
-                    skillArray = v.skills;
-                } else if (v.skills_list) {
-                    // Fallback to split clean strings without spaces causing layout bugs
-                    skillArray = v.skills_list.split(',').map(s => s.trim());
-                }
-
-                // Increment counts for each selected skill matching their profiles
+                const skillArray = Array.isArray(v.skills) ? v.skills : [];
                 skillArray.forEach(skillName => {
                     const cleanName = skillName.trim();
                     dataMap[cleanName] = (dataMap[cleanName] || 0) + 1;
-                    if (dataMap[cleanName] > highestCount) {
-                        highestCount = dataMap[cleanName];
-                    }
                 });
             }
         });
 
-        // Step 4: Map the calculated numbers directly onto the admin page grid rows
-        document.querySelectorAll('.skills-card .skill-row').forEach(row => {
-            const labelEl = row.querySelector('.skill-label');
-            const barEl = row.querySelector('.skill-bar');
-            const countEl = row.querySelector('.skill-count');
+        const highestCount = Math.max(...Object.values(dataMap), 1);
+        const container = document.querySelector('.skills-card');
+        if (!container) return;
 
-            if (!labelEl || !barEl || !countEl) return;
+        // Remove existing static skill rows
+        container.querySelectorAll('.skill-row').forEach(row => row.remove());
 
-            const skillName = labelEl.textContent.trim();
-            const count = dataMap[skillName] || 0;
-            
-            const maxBound = highestCount > 0 ? highestCount : 1;
-            const horizontalPercentageWidth = (count / maxBound) * 100;
-
-            // Transition text indicators and bar container widths live
-            countEl.textContent = count;
-            barEl.style.width = `${horizontalPercentageWidth}%`;
-        });
+        // Dynamically build a row for every skill found
+        Object.entries(dataMap)
+            .sort((a, b) => b[1] - a[1]) // sort highest to lowest
+            .forEach(([skillName, count]) => {
+                const width = (count / highestCount) * 100;
+                const row = document.createElement('div');
+                row.className = 'skill-row';
+                row.innerHTML = `
+                    <span class="skill-label">${skillName}</span>
+                    <div class="skill-bar-track">
+                        <div class="skill-bar" style="width: ${width}%"></div>
+                    </div>
+                    <span class="skill-count">${count}</span>
+                `;
+                container.appendChild(row);
+            });
 
     } catch (error) {
-        console.error("Failed calculating real-time skills distribution layout bindings:", error);
+        console.error("Failed calculating skills distribution:", error);
     }
 }
 
