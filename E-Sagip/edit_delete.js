@@ -173,6 +173,16 @@ function closePostEditModal() {
   currentEditCard = null;
 }
 
+// ── Edit date: no future dates ──────────────────────────────────
+const editDateInput = document.getElementById('edit-date');
+if (editDateInput) {
+  const today = new Date();
+  const yyyy  = today.getFullYear();
+  const mm    = String(today.getMonth() + 1).padStart(2, '0');
+  const dd    = String(today.getDate()).padStart(2, '0');
+  editDateInput.max = `${yyyy}-${mm}-${dd}`;
+}
+
 function openPostDeleteModal(card) {
   currentDeleteCard = card;
   const title = card.querySelector('.recent-op-name')?.textContent || 'this post';
