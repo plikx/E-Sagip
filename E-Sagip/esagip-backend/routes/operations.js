@@ -86,4 +86,16 @@ router.get('/dashboard-stats', async (req, res) => {
     }
 });
 
+// 4. FETCH LIVE SKILLS DISTRIBUTION DATA FOR GRAPH VISUALIZATION
+router.get('/skills-distribution', async (req, res) => {
+    try {
+        // Query the pre-calculated view view from esagip_schema.sql
+        const [distribution] = await db.query('SELECT * FROM vw_skill_distribution');
+        res.json(distribution);
+    } catch (err) {
+        console.error("Error fetching skill distribution views:", err);
+        res.status(500).json({ error: "Failed to load skills distribution analytics." });
+    }
+});
+
 module.exports = router;
