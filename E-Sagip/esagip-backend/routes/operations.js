@@ -123,4 +123,58 @@ router.patch('/:id/complete', async (req, res) => {
     }
 });
 
+
+// 6. ENROLL A VOLUNTEER IN AN OPERATION
+router.post('/:id/enroll', async (req, res) => {
+    const operationId = req.params.id;
+    const { volunteerId } = req.body;
+
+    if (!volunteerId) {
+        return res.status(400).json({ success: false, error: "volunteerId is required." });
+    }
+
+    try {
+        // 1. Confirm operation exists and is active
+        const [opRows] = await db.query('SELECT * FROM operations WHERE id = ?', [operationId]);
+        if (opRows.length === 0) {
+            return res.status(404).json({ success: false, error: "Operation not found." });
+        }
+        const operation = opRows[0];
+
+        if (operation.status !== 'active') {
+            return res.status(400).json({ success: false, error: "This operation is no longer active." });
+        }
+
+        // 2. Count current enrollments (status = 'enrolled')
+        const [[{ count }]] = await db.query(
+            "SELECT COUNT(*) AS count FROM enrollments WHERE operation_id = ? AND status = 'enrolled'",
+            [operationId]
+        );
+
+        if (count >= operation.volunteer_slots) {
+            return res.status(400).json({ success: false, error: "Operation is full." });
+        }
+
+        // 3. Prevent duplicate enrollment
+        const [existing] = await db.query(
+            "SELECT id FROM enrollments WHERE operation_id = ? AND volunteer_id = ? AND status = 'enrolled'",
+            [operationId, volunteerId]
+        );
+        if (existing.length > 0) {
+            return res.status(400).json({ success: false, error: "You already joined this operation." });
+        }
+
+        // 4. Insert enrollment
+        await db.query(
+            "INSERT INTO enrollments (operation_id, volunteer_id, status, enrolled_at) VALUES (?, ?, 'enrolled', NOW())",
+            [operationId, volunteerId]
+        );
+
+        res.json({ success: true });
+
+    } catch (err) {
+        console.error('Enrollment error:', err);
+        res.status(500).json({ success: false, error: "Server error during enrollment." });
+    }
+});
 module.exports = router;
