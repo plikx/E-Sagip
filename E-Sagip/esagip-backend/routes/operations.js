@@ -194,4 +194,22 @@ router.get('/my-tasks/:volunteerId', async (req, res) => {
         res.status(500).json({ error: "Could not fetch your tasks." });
     }
 });
+
+// 7. GET ENROLLED VOLUNTEERS FOR AN OPERATION
+router.get('/:id/volunteers', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT v.id, v.first_name, v.last_name, v.contact_number, e.enrolled_at
+            FROM enrollments e
+            JOIN volunteers v ON v.id = e.volunteer_id
+            WHERE e.operation_id = ? AND e.status = 'enrolled'
+            ORDER BY e.enrolled_at ASC
+        `, [req.params.id]);
+        res.json(rows);
+    } catch (err) {
+        console.error('Fetch operation volunteers error:', err);
+        res.status(500).json({ error: "Could not fetch enrolled volunteers." });
+    }
+});
+
 module.exports = router;
