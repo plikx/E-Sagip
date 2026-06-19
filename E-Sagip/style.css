@@ -692,9 +692,26 @@ a {
 
 .btn-full {
 
-  background-color: var(--text-muted);
-  color: var(--text-muted);
-  border: var(--text-muted);
+  background-color: var(--off-white);
+  color: var(--gray);
+  border: var(--gray);
+
+}
+
+.btn-full {
+
+  background-color: var(--off-white);
+  color: var(--gray);
+  border: var(--gray);
+  
+}
+
+.btn-full:hover {
+
+  background-color: var(--off-white);
+  color: var(--gray);
+  border: var(--gray);
+  cursor: not-allowed;
 }
 
 .comp-container svg {
