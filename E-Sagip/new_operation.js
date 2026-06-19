@@ -157,7 +157,40 @@ card.innerHTML = `
 
 
   // ── Hide empty state ─────────────────────────────────────────────
+async function completeOp(operationId) {
+  if (!confirm('Mark this operation as complete?')) return;
 
+  try {
+    const res = await fetch(`${API_BASE_URL}/operations/${operationId}/complete`, {
+      method: 'PATCH'
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || `Server returned ${res.status}`);
+    }
+
+    // Remove the card from the dashboard
+    const card = document.querySelector(`.op-card[data-op-id="${operationId}"]`);
+    if (card) card.remove();
+
+    // Update the active operations counter
+    const statEl = document.querySelector('.stat-value-op');
+    if (statEl) statEl.textContent = Math.max(0, Number(statEl.textContent) - 1);
+
+    // Show empty state again if no operations remain
+    const list = document.getElementById('operation-list');
+    if (list && list.children.length === 0) {
+      const noOpt = document.querySelector('.empty-state');
+      if (noOpt) noOpt.style.display = '';
+    }
+
+    alert('✅ Operation marked as complete.');
+  } catch (err) {
+    console.error('Complete operation error:', err);
+    alert('Failed to mark operation as complete: ' + err.message);
+  }
+}
 async function loadActiveOperations() {
   try {
     const res = await fetch(`${API_BASE_URL}/operations/active`);
