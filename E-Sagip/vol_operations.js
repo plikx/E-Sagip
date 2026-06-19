@@ -247,7 +247,7 @@ async function loadMyTasks() {
       return `
         <div class="op-card" style=" border-right: 5px solid #800020;">
           <div class="op-header">
-            <span class="op-name" style="font-weigth: 800; color: #800020;">${t.title}</span>
+            <span class="op-name" style="font-weight: 600; color: #800020;">${t.title}</span>
           </div>
           <div class="op-meta">
             <span style="font-size: 15px;"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="20">
