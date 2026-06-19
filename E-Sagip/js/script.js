@@ -448,29 +448,34 @@ function switchSubNav(btn, tab) {
 
 }
 
-
-
-function toggleOp(chevronEl) {
-
+async function toggleOp(chevronEl) {
   const card    = chevronEl.closest('.op-card');
-
   const details = card.querySelector('.op-details');
-
   const svg     = chevronEl.querySelector('svg');
-
-
-
   if (!details) return;
 
-
-
   const isOpen = details.classList.toggle('open');
-
   if (svg) svg.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  if (!isOpen) return;
 
+  const opId = card.dataset.opId;
+  const tagWrap = details.querySelector('.volunteer-tags');
+  if (!opId || !tagWrap) return;
+
+  tagWrap.innerHTML = `<span class="vtag" style="opacity:0.5;">Loading…</span>`;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/operations/${opId}/volunteers`);
+    const vols = await res.json();
+
+    tagWrap.innerHTML = (!Array.isArray(vols) || vols.length === 0)
+      ? `<span class="vtag" style="opacity:0.5;font-style:italic;">No volunteers yet</span>`
+      : vols.map(v => `<span class="vtag">${v.first_name} ${v.last_name}</span>`).join('');
+  } catch (err) {
+    console.error('Failed to load enrolled volunteers:', err);
+    tagWrap.innerHTML = `<span class="vtag" style="opacity:0.5;">Could not load volunteers</span>`;
+  }
 }
-
-
 
 function handleLogout() {
 
@@ -1187,6 +1192,7 @@ function validatePostForm() {
 document.addEventListener('DOMContentLoaded', () => {
 
   loadVolunteers();
+    loadActiveOperations();
 
 
 
@@ -1569,6 +1575,58 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+async function loadActiveOperations() {
+  const list = document.getElementById('operation-list');
+  if (!list) return;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/operations/active`);
+    const ops = await res.json();
+
+    if (!Array.isArray(ops) || ops.length === 0) return;
+
+    list.innerHTML = ops.map(op => {
+      const dateObj = new Date(op.scheduled_at);
+      const schedDisplay = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        + ' · ' + dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const pct = Math.round((op.enrolled_count / op.volunteer_slots) * 100);
+
+      return `
+        <div class="op-card" data-op-id="${op.id}">
+          <div class="op-header">
+            <span class="op-name">${op.title}</span>
+            <span class="op-count">
+              ${op.enrolled_count}/${op.volunteer_slots}
+              <span class="chevron" onclick="toggleOp(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </span>
+            </span>
+          </div>
+          <div class="meta-container">
+            <div class="op-meta">
+              <span>${op.location}</span>
+              <span>${schedDisplay}</span>
+            </div>
+          </div>
+          <div class="op-progress-bar"><div class="op-progress-fill" style="width:${pct}%"></div></div>
+          <div class="comp-container">
+            <button class="complete" onclick="completeOp(${op.id})">Complete</button>
+          </div>
+          <div class="op-details">
+            <p>Enrolled volunteers:</p>
+            <div class="volunteer-tags">
+              <span class="vtag" style="opacity:0.5;font-style:italic;">No volunteers yet</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load active operations:', err);
+  }
+}
 
 async function loadDashboardSummaryMetrics() {
 
