@@ -177,4 +177,21 @@ router.post('/:id/enroll', async (req, res) => {
         res.status(500).json({ success: false, error: "Server error during enrollment." });
     }
 });
+
+// in routes/operations.js, add:
+router.get('/my-tasks/:volunteerId', async (req, res) => {
+    try {
+        const [tasks] = await db.query(`
+            SELECT o.*, e.status AS enrollment_status, e.enrolled_at
+            FROM enrollments e
+            JOIN operations o ON e.operation_id = o.id
+            WHERE e.volunteer_id = ? AND e.status = 'enrolled' AND o.status = 'active'
+            ORDER BY o.scheduled_at ASC
+        `, [req.params.volunteerId]);
+        res.json(tasks);
+    } catch (err) {
+        console.error('My tasks fetch error:', err);
+        res.status(500).json({ error: "Could not fetch your tasks." });
+    }
+});
 module.exports = router;
