@@ -608,6 +608,7 @@ a {
   border-radius: 10px;
   padding: 14px 16px;
   box-shadow: 0 2px 8px rgba(74,0,21,0.07);
+  margin-bottom: 10px;
 }
 
 .op-header {
@@ -615,10 +616,12 @@ a {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 6px;
+  color: var(--primary);
+ 
 }
 
 .op-name {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text-dark);
 }
@@ -665,6 +668,7 @@ a {
   align-items: center;
   text-align: center;
   margin-top: 10px;
+  
 }
 
 .btn-join {
@@ -689,6 +693,7 @@ a {
   color: var(--text-muted);
   border: var(--text-muted);
 }
+
 .comp-container svg {
 
   height: 1rem;
