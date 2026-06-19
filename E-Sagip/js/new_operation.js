@@ -5,10 +5,10 @@ async function handleDeployOp() {
   const slotsInput    = document.getElementById('slots');
   const descInput     = document.querySelector('#tab-newop textarea[placeholder]');
 
-  const title    = titleInput?.value.trim();
-  const location = locationInput?.value.trim();
-  const sched    = schedInput?.value;
-  const slots    = slotsInput?.value;
+  const title       = titleInput?.value.trim();
+  const location    = locationInput?.value.trim();
+  const sched       = schedInput?.value;
+  const slots       = slotsInput?.value;
   const description = descInput?.value.trim() || '';
 
   if (!title || !location || !sched || !slots) {
@@ -35,9 +35,9 @@ async function handleDeployOp() {
   // Convert "2026-06-18T14:30" -> "2026-06-18 14:30:00" for MySQL DATETIME
   const scheduledAt = sched.replace('T', ' ') + ':00';
 
-  // Logged-in admin id, if you store it after login
+  // Logged-in admin id
   const adminId = (() => {
-    try { return JSON.parse(localStorage.getItem('user'))?.id || null; }
+    try { return JSON.parse(localStorage.getItem('currentUser'))?.id || null; }
     catch { return null; }
   })();
 
@@ -45,7 +45,7 @@ async function handleDeployOp() {
   if (deployBtn) { deployBtn.disabled = true; deployBtn.textContent = 'Deploying…'; }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/operations/deploy`, {
+    const res = await fetch(`${API_BASE_URL}/api/operations/deploy`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -71,56 +71,56 @@ async function handleDeployOp() {
     const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const schedDisplay = `${formattedDate} · ${formattedTime}`;
 
-   const card = document.createElement('div');
-card.className = 'op-card';
-card.dataset.opId = data.operationId; // ← add this line
+    const card = document.createElement('div');
+    card.className = 'op-card';
+    card.dataset.opId = data.operationId; 
 
-card.innerHTML = `
-  <div class="op-header">
-    <span class="op-name">${title}</span>
-    <span class="op-count">
-      0/${slots}
-      <span class="chevron" onclick="toggleOp(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </span>
-    </span>
-  </div>
-  <div class="meta-container">
-    <div class="op-meta">
-      <span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-        ${location}
-      </span>
-      <span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        ${schedDisplay}
-      </span>
-    </div>
-  </div>
-  <div class="op-progress-bar"><div class="op-progress-fill" style="width:0%"></div></div>
-  <div class="comp-container">
-    <button class="complete" onclick="completeOp(${data.operationId})">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#1a7a40" stroke-width="2" width="28" height="28">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-        <polyline points="22 4 12 14.01 9 11.01"/>
-      </svg>Complete
-    </button>
-  </div>
-  <div class="op-details">
-    <p>Enrolled volunteers:</p>
-    <div class="volunteer-tags">
-      <span class="vtag" style="opacity:0.5;font-style:italic;">No volunteers yet</span>
-    </div>
-  </div>
-`;
+    card.innerHTML = `
+      <div class="op-header">
+        <span class="op-name">${title}</span>
+        <span class="op-count">
+          0/${slots}
+          <span class="chevron" onclick="toggleOp(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </span>
+      </div>
+      <div class="meta-container">
+        <div class="op-meta">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            ${location}
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            ${schedDisplay}
+          </span>
+        </div>
+      </div>
+      <div class="op-progress-bar"><div class="op-progress-fill" style="width:0%"></div></div>
+      <div class="comp-container">
+        <button class="complete" onclick="completeOp(${data.operationId})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a7a40" stroke-width="2" width="28" height="28">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>Complete
+        </button>
+      </div>
+      <div class="op-details">
+        <p>Enrolled volunteers:</p>
+        <div class="volunteer-tags">
+          <span class="vtag" style="opacity:0.5;font-style:italic;">No volunteers yet</span>
+        </div>
+      </div>
+    `;
 
     const noOpt = document.querySelector('.empty-state');
     if (noOpt) noOpt.style.display = 'none';
@@ -154,51 +154,3 @@ card.innerHTML = `
     if (deployBtn) { deployBtn.disabled = false; deployBtn.innerHTML = '🚀Deploy Operation'; }
   }
 }
-
-
-  // ── Hide empty state ─────────────────────────────────────────────
-
-  const noOpt = document.querySelector('.empty-state');
-
-  if (noOpt) noOpt.style.display = 'none';
-
-  document.getElementById('operation-list').appendChild(card);
-
-  // ── Increment operations stat ────────────────────────────────────
-
-  const statEl = document.querySelector('.stat-value-op');
-
-  if (statEl) statEl.textContent = Number(statEl.textContent) + 1;
-
-  // ── Navigate to dashboard tab ────────────────────────────────────
-
-  document.querySelectorAll('.dashboard-content').forEach(tab => tab.classList.add('hidden'));
-
-  document.getElementById('tab-dashboard').classList.remove('hidden');
-
-  // ── Reset form ───────────────────────────────────────────────────
-
-  document.querySelector('.form-group input[placeholder="e.g. Flood Relief Distribution"]').value = '';
-
-  document.querySelector('.form-group input[placeholder="Purok/Street, Brgy. 628, Sta. Mesa"]').value = '';
-
-  document.getElementById('sched').value = '';
-
-  document.getElementById('slots').value = '';
-
-  document.querySelectorAll('#skill-tags input[type="checkbox"]').forEach(cb => {
-
-    cb.checked  = false;
-
-    cb.disabled = false;
-
-  });
-
-  document.getElementById('others-div').classList.add('hidden');
-
-  document.getElementById('other-skill').value = '';
-
-  document.querySelector('textarea[placeholder]').value = '';
-
-}
-
