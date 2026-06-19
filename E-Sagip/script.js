@@ -1,5 +1,18 @@
 const API_BASE_URL = 'https://e-sagip-production.up.railway.app/api';
 
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const el = document.querySelector('.stat-value-v');
+    if (!el) return;
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        console.log('stat-value-v changed to:', m.target.textContent);
+        console.trace();
+      });
+    });
+    observer.observe(el, { childList: true, subtree: true, characterData: true });
+  }, 500);
+});
 /* ===== LOGIN PAGE ===== */
 let allVolunteers = [];
 
