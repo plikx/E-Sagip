@@ -1,8 +1,6 @@
 // js/vol_operations.js
 
-const API_BASE_URL = 'https://e-sagip-production.up.railway.app/api';
-
-let allOperations = [];
+let allOperations   = [];
 let pendingJoinOpId = null;
 
 // ── Load & render active operations ─────────────────────────────
@@ -11,7 +9,7 @@ async function loadOperations() {
   if (!container) return;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/operations/active`);
+    const res = await fetch(`${API_BASE_URL}/api/operations/active`);
     allOperations = await res.json();
     renderOperations(allOperations);
     updateTicker(allOperations);
@@ -39,7 +37,8 @@ function renderOperations(ops) {
         <div class="empty-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
-            <path d="M12 8v8"/><path d="M8 12h8"/>
+            <path d="M12 8v8"/>
+            <path d="M8 12h8"/>
           </svg>
         </div>
         <h3>No Active Operations</h3>
@@ -52,18 +51,14 @@ function renderOperations(ops) {
     return;
   }
 
-  // Get current user to check if already enrolled
-  let currentUser = null;
-  try { currentUser = JSON.parse(localStorage.getItem('currentUser')); } catch (e) {}
-
   container.innerHTML = ops.map(op => {
-    const dateObj      = new Date(op.scheduled_at);
+    const dateObj       = new Date(op.scheduled_at);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    const enrolled     = op.enrolled_count || 0;
-    const slots        = op.volunteer_slots;
-    const pct          = slots > 0 ? Math.round((enrolled / slots) * 100) : 0;
-    const isFull       = enrolled >= slots;
+    const enrolled      = op.enrolled_count || 0;
+    const slots         = op.volunteer_slots;
+    const pct           = slots > 0 ? Math.round((enrolled / slots) * 100) : 0;
+    const isFull        = enrolled >= slots;
 
     return `
       <div class="op-card" data-op-id="${op.id}">
@@ -111,30 +106,22 @@ function updateTicker(ops) {
   const ticker = document.getElementById('activeOperationTicker');
   if (!ticker) return;
 
-  if (ops.length === 0) {
-    ticker.textContent = '🚨 No active operations at the moment.';
-    return;
-  }
-
-  ticker.textContent = ops
-    .map(op => `🚨 ${op.title} — ${op.location}`)
-    .join('     ·     ');
+  ticker.textContent = ops.length === 0
+    ? '🚨 No active operations at the moment.'
+    : ops.map(op => `🚨 ${op.title} — ${op.location}`).join('     ·     ');
 }
 
 // ── Filter buttons ───────────────────────────────────────────────
 function setFilter(btn) {
-  document.querySelectorAll('.ops-filters button')
-    .forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ops-filters button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
   const filter = btn.textContent.trim();
-
   if (filter === 'All') {
     renderOperations(allOperations);
     return;
   }
 
-  // Filter by skill name match in title (or add skill fetching later)
   const filtered = allOperations.filter(op =>
     op.title.toLowerCase().includes(filter.toLowerCase())
   );
@@ -169,30 +156,26 @@ function handleJoinClick(opId, opTitle) {
     return;
   }
 
-  // Check approval status from the user object saved at login
   if (user.status === 'pending') {
     showNotApprovedModal();
     return;
   }
 
-  // Store which op we're joining, then open the disclaimer modal
   pendingJoinOpId = opId;
   openJoinModal(opTitle);
 }
 
-// ── confirmJoin: override the one in script2.js ──────────────────
+// ── Confirm join ─────────────────────────────────────────────────
 async function confirmJoin() {
   closeJoinModal();
-
   if (!pendingJoinOpId) return;
 
   let user = null;
   try { user = JSON.parse(localStorage.getItem('currentUser')); } catch (e) {}
-
   if (!user) return;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/operations/${pendingJoinOpId}/enroll`, {
+    const res = await fetch(`${API_BASE_URL}/api/operations/${pendingJoinOpId}/enroll`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ volunteerId: user.id })
@@ -206,8 +189,6 @@ async function confirmJoin() {
     }
 
     alert('✅ You have successfully joined the operation. Thank you!');
-
-    // Refresh the list so slot count updates
     await loadOperations();
 
   } catch (err) {
@@ -218,8 +199,35 @@ async function confirmJoin() {
   }
 }
 
+// ── Modal helpers ────────────────────────────────────────────────
+function openJoinModal(opTitle) {
+  const nameEl = document.getElementById('joinOperationName');
+  if (nameEl) nameEl.textContent = opTitle;
+  document.getElementById('joinModal')?.classList.remove('hidden');
+}
+
+function closeJoinModal() {
+  document.getElementById('joinModal')?.classList.add('hidden');
+}
+
+function showNotApprovedModal() {
+  document.getElementById('notApprovedModal')?.classList.remove('hidden');
+}
+
+function closeNotApprovedModal() {
+  document.getElementById('notApprovedModal')?.classList.add('hidden');
+}
+
 // ── Init on page load ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Set volunteer name from localStorage
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('currentUser')); } catch (e) {}
+  if (user?.name) {
+    const nameEl = document.getElementById('volunteerName');
+    if (nameEl) nameEl.textContent = user.name;
+  }
+
   loadOperations();
   initOpsSearch();
 });

@@ -7,7 +7,6 @@ function openEditModal(btn) {
 
   const rawName = _activeCard.querySelector('.vol-name').childNodes[0].textContent.trim();
   const meta    = _activeCard.querySelector('.vol-meta').textContent.trim();
-
   const parts   = meta.split(' · ');
   const address = parts[0]?.trim() || '';
   const contact = parts[1]?.trim() || '';
@@ -27,7 +26,7 @@ function closeEditModal() {
   _activeCard = null;
 }
 
-function saveEditModal() {
+async function saveEditModal() {
   const name    = document.getElementById('edit-name').value.trim();
   const contact = document.getElementById('edit-contact').value.trim();
   const address = document.getElementById('edit-address').value.trim();
@@ -38,6 +37,33 @@ function saveEditModal() {
     return;
   }
 
+  // Split name into first/last for the backend
+  const nameParts   = name.split(' ');
+  const firstName   = nameParts[0] || '';
+  const lastName    = nameParts.slice(1).join(' ') || '';
+  const volunteerId = _activeCard?.dataset.id;
+
+  // Save to backend if we have an ID
+  if (volunteerId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/volunteers/${volunteerId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, contactNumber: contact, address, status })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Failed to save changes.');
+        return;
+      }
+    } catch (err) {
+      console.error('Save volunteer error:', err);
+      alert('Connection error. Changes not saved.');
+      return;
+    }
+  }
+
+  // Update DOM
   if (_activeCard) {
     const nameNode = _activeCard.querySelector('.vol-name');
     nameNode.childNodes[0].textContent = name + ' ';
@@ -63,7 +89,6 @@ function openRemoveModal(btn) {
 
   const rawName = _activeCard.querySelector('.vol-name').childNodes[0].textContent.trim();
   document.getElementById('remove-vol-name').textContent = rawName;
-
   document.getElementById('remove-modal').classList.remove('hidden');
 }
 
@@ -72,8 +97,31 @@ function closeRemoveModal() {
   _activeCard = null;
 }
 
-function confirmRemoveModal() {
-  if (_activeCard) _activeCard.remove();
+async function confirmRemoveModal() {
+  if (!_activeCard) return;
+
+  const volunteerId = _activeCard.dataset.id;
+
+  if (volunteerId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/volunteers/${volunteerId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Failed to remove volunteer.');
+        closeRemoveModal();
+        return;
+      }
+    } catch (err) {
+      console.error('Remove volunteer error:', err);
+      alert('Connection error. Could not remove volunteer.');
+      closeRemoveModal();
+      return;
+    }
+  }
+
+  _activeCard.remove();
   closeRemoveModal();
 }
 
@@ -102,9 +150,8 @@ function closeAdminEditModal() {
 }
 
 function saveAdminEditModal() {
-  const name     = document.getElementById('admin-edit-name').value.trim();
-  const email    = document.getElementById('admin-edit-email').value.trim();
-  const password = document.getElementById('admin-edit-password').value.trim();
+  const name  = document.getElementById('admin-edit-name').value.trim();
+  const email = document.getElementById('admin-edit-email').value.trim();
 
   if (!name || !email) {
     alert('Please fill in all required fields.');
@@ -124,7 +171,6 @@ function openAdminDeleteModal(btn) {
 
   const name = _activeAdminCard.querySelector('.admin-name').textContent.trim();
   document.getElementById('admin-delete-name').textContent = name;
-
   document.getElementById('admin-delete-modal').classList.remove('hidden');
 }
 
@@ -173,16 +219,6 @@ function closePostEditModal() {
   currentEditCard = null;
 }
 
-// ── Edit date: no future dates ──────────────────────────────────
-const editDateInput = document.getElementById('edit-date');
-if (editDateInput) {
-  const today = new Date();
-  const yyyy  = today.getFullYear();
-  const mm    = String(today.getMonth() + 1).padStart(2, '0');
-  const dd    = String(today.getDate()).padStart(2, '0');
-  editDateInput.max = `${yyyy}-${mm}-${dd}`;
-}
-
 function openPostDeleteModal(card) {
   currentDeleteCard = card;
   const title = card.querySelector('.recent-op-name')?.textContent || 'this post';
@@ -200,7 +236,17 @@ function closePostDeleteModal() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ── Volunteer modals ────────────────────────────────────────────
+  // ── Edit date: no future dates ───────────────────────────────
+  const editDateInput = document.getElementById('edit-date');
+  if (editDateInput) {
+    const today = new Date();
+    const yyyy  = today.getFullYear();
+    const mm    = String(today.getMonth() + 1).padStart(2, '0');
+    const dd    = String(today.getDate()).padStart(2, '0');
+    editDateInput.max = `${yyyy}-${mm}-${dd}`;
+  }
+
+  // ── Volunteer modals: close on backdrop click ────────────────
   document.getElementById('edit-modal')?.addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
   });
@@ -214,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === this) closeAdminDeleteModal();
   });
 
-  // ── Feed post edit modal ────────────────────────────────────────
+  // ── Feed post edit modal ─────────────────────────────────────
   document.getElementById('closeEditModal')?.addEventListener('click', closePostEditModal);
   document.getElementById('cancelEditPost')?.addEventListener('click', closePostEditModal);
   document.getElementById('editPostModal')?.addEventListener('click', function(e) {
@@ -251,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closePostEditModal();
   });
 
-  // ── Feed post delete modal ──────────────────────────────────────
+  // ── Feed post delete modal ───────────────────────────────────
   document.getElementById('cancelDeletePost')?.addEventListener('click', closePostDeleteModal);
   document.getElementById('deletePostModal')?.addEventListener('click', function(e) {
     if (e.target === this) closePostDeleteModal();
@@ -274,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Escape key closes all modals ───────────────────────────────
+  // ── Escape key closes all modals ─────────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeEditModal();
