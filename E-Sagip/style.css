@@ -669,8 +669,9 @@ a {
 
 .btn-join {
 
-  padding: 10px;
+  padding: 5px;
   background-color: #1a7a40;
+  border: none;
   color: white;
 
 }
@@ -678,6 +679,7 @@ a {
 .btn-join:hover {
 
   background-color: #22a050;
+  border: none;
   color: white;
   cursor: pointer;
 }
