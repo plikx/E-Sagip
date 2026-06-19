@@ -107,7 +107,7 @@ card.innerHTML = `
   </div>
   <div class="op-progress-bar"><div class="op-progress-fill" style="width:0%"></div></div>
   <div class="comp-container">
-   <button class="complete" onclick="completeOp(${op.id})">
+   <button class="complete" onclick="completeOp(${data.operationId})">
       <svg viewBox="0 0 24 24" fill="none" stroke="#1a7a40" stroke-width="2" width="28" height="28">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
         <polyline points="22 4 12 14.01 9 11.01"/>
@@ -246,7 +246,7 @@ async function loadActiveOperations() {
         </div>
         <div class="op-progress-bar"><div class="op-progress-fill" style="width:${pct}%"></div></div>
         <div class="comp-container">
-          <button class="complete" onclick="complete()">
+          <button class="complete" onclick="completeOp(${op.id})">
             <svg viewBox="0 0 24 24" fill="none" stroke="#1a7a40" stroke-width="2" width="28" height="28">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
