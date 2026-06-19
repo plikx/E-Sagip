@@ -2430,35 +2430,3 @@ a {
     }
 
  
-    .privacy-consent{
-    margin:20px 0;
-    padding:16px;
-    background:#f8f8f8;
-    border:1px solid #ddd;
-    border-radius:10px;
-}
-
-.privacy-checkbox{
-    display:flex;
-    align-items:flex-start;
-    gap:12px;
-    font-size:14px;
-    line-height:1.6;
-    color:#444;
-    cursor:pointer;
-}
-
-.privacy-checkbox input{
-    margin-top:4px;
-    transform:scale(1.15);
-}
-
-.privacy-checkbox a{
-    color:#800020;
-    font-weight:600;
-    text-decoration:none;
-}
-
-.privacy-checkbox a:hover{
-    text-decoration:underline;
-}
