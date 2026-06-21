@@ -131,35 +131,107 @@ if (activeOpsContainer) {
     activeOpsContainer.innerHTML = opsHTML;
 }
 
-// ---------- Volunteer Filters ----------
-// ---------- Volunteer Filters ----------
-const uniqueSkills = [
-  "All Skills",
-  ...new Set(volunteers.flatMap(v => v.skills))
-];
-
+// ---------- Volunteer Filters (now backed by real API data) ----------
+let volunteers = [];
+let admins = [];
 let activeFilter = "All Skills";
 let searchTerm = "";
 
+async function loadVolunteersForSuperadmin() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/volunteers`);
+    const data = await res.json();
+
+    // Adapt your backend's shape (first_name/last_name/skills array) to what this page's render expects
+    volunteers = data.map(v => ({
+      name: `${v.first_name} ${v.last_name}`,
+      initials: ((v.first_name?.[0] || '') + (v.last_name?.[0] || '')).toUpperCase(),
+      status: v.status,
+      location: v.address,
+      phone: v.contact_number,
+      skills: v.skills || [],
+      ops: v.ops || 0
+    }));
+
+    renderFilters();
+    renderVolunteers();
+  } catch (err) {
+    console.error('Failed to load volunteers for superadmin:', err);
+  }
+}
+
 function renderFilters() {
-  ...
+  const uniqueSkills = ["All Skills", ...new Set(volunteers.flatMap(v => v.skills))];
+  const filterContainer = document.getElementById("skill-filters");
+  if (!filterContainer) return;
+
+  filterContainer.innerHTML = uniqueSkills.map(skill => `
+    <button class="filter-pill ${skill === activeFilter ? "active" : ""}" data-skill="${skill}">
+      ${skill}
+    </button>
+  `).join("");
+
+  document.querySelectorAll(".filter-pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeFilter = btn.dataset.skill;
+      renderFilters();
+      renderVolunteers();
+    });
+  });
 }
 
 function renderVolunteers() {
-  ...
+  const resultsCount = document.getElementById("results-count");
+  const volunteerList = document.getElementById("vol-list");
+  if (!resultsCount || !volunteerList) return;
+
+  const term = searchTerm.toLowerCase();
+
+  const filtered = volunteers.filter(v => {
+    const matchesSkill = activeFilter === "All Skills" || v.skills.includes(activeFilter);
+    const matchesSearch = v.name.toLowerCase().includes(term) ||
+      v.skills.some(s => s.toLowerCase().includes(term));
+    return matchesSkill && matchesSearch;
+  });
+
+  resultsCount.textContent = `${filtered.length} volunteer${filtered.length === 1 ? "" : "s"} found`;
+
+  volunteerList.innerHTML = filtered.map(v => `
+    <div class="card vol-card">
+      <div class="vol-top">
+        <div class="vol-left">
+          <div class="avatar">${v.initials}</div>
+          <div>
+            <div class="vol-name-row">
+              <span class="vol-name">${v.name}</span>
+              <span class="status-badge ${v.status}">${v.status}</span>
+            </div>
+            <div class="vol-meta">${v.location}</div>
+            <div class="vol-meta">${v.phone}</div>
+            <div class="vol-skills">
+              ${v.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join("")}
+            </div>
+          </div>
+        </div>
+        <div class="vol-ops">
+          <div class="num">${v.ops}</div>
+          <div class="lbl">ops</div>
+        </div>
+      </div>
+    </div>
+  `).join("");
 }
 
 const searchInput = document.getElementById("vol-search");
-
 if (searchInput) {
   searchInput.addEventListener("input", e => {
     searchTerm = e.target.value;
     renderVolunteers();
   });
-
-  renderFilters();
-  renderVolunteers();
 }
+
+// Kick off the real data load
+document.addEventListener('DOMContentLoaded', loadVolunteersForSuperadmin);
 function renderVolunteers() {
 
     const resultsCount = document.getElementById("results-count");
