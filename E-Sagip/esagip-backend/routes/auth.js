@@ -217,8 +217,6 @@ router.delete('/volunteers/:id', async (req, res) => {
         res.status(500).json({ error: "Could not remove volunteer." });
     }
 });
-
-module.exports = router;
 // 7. FIND ACCOUNT BY EMAIL (Step 1 of password recovery)
 router.post('/recovery/find', async (req, res) => {
     const { email } = req.body;
@@ -322,3 +320,5 @@ router.post('/recovery/reset', async (req, res) => {
         res.status(500).json({ error: "Server error during password reset." });
     }
 });
+module.exports = router;
+
