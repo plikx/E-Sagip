@@ -115,4 +115,17 @@ router.delete('/volunteers/:id', async (req, res) => {
     }
 });
 
+// 6. FETCH ALL ADMINS (for Superadmin Dashboard)
+router.get('/admins', async (req, res) => {
+    try {
+        const [admins] = await db.query(
+            "SELECT id, name, email, role FROM admins WHERE role = 'admin'"
+        );
+        res.json(admins);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not fetch admin accounts." });
+    }
+});
+
 module.exports = router;

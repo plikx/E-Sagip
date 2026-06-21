@@ -264,8 +264,27 @@ if (saVolSearchInput) {
   });
 }
 
+async function loadAdminsForSuperadmin() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/admins`);
+    const data = await res.json();
+    saAdmins = data.map(a => ({
+      id: a.id,
+      name: a.name,
+      email: a.email,
+      role: a.role
+    }));
+    renderSaAdmins();
+  } catch (err) {
+    console.error('Failed to load admins for superadmin:', err);
+  }
+}
+
 // Kick off the real data load
-document.addEventListener('DOMContentLoaded', loadVolunteersForSuperadmin);
+document.addEventListener('DOMContentLoaded', () => {
+  loadVolunteersForSuperadmin();
+  loadAdminsForSuperadmin();
+});
 
 
 // ---------- Admin List ----------
