@@ -63,6 +63,14 @@ function applyProfanityFilter(el) {
   });
 }
 
+document.getElementById('desc-op').addEventListener('input', function () {
+  if (this.value.length > 300) {
+    this.value = this.value.slice(0, 300);
+  }
+
+  document.getElementById('desc-count').textContent = this.value.length;
+});
+
 // ── Field Validation Helpers ──────────────────────────────────────────
 function setFieldError(el, hasError) {
   if (!el) return;
