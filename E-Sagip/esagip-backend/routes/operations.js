@@ -2,11 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { logAction } = require('./audit');
 
-// 1. DEPLOY NEW OPERATION
-// 1. DEPLOY NEW OPERATION (with idempotency protection)
+// 1. DEPLOY NEW OPERATION (with idempotency protection, now also logs to audit trail)
 router.post('/deploy', async (req, res) => {
-    const { title, location, scheduledAt, slots, description, skills, otherSkill, createdBy, idempotencyKey } = req.body;
+    const { title, location, scheduledAt, slots, description, skills, otherSkill, createdBy, adminName, idempotencyKey } = req.body;
 
     if (!idempotencyKey) {
         return res.status(400).json({ error: "Missing idempotencyKey." });
@@ -53,6 +53,14 @@ router.post('/deploy', async (req, res) => {
             'INSERT INTO idempotency_keys (idempotency_key, endpoint, response_body) VALUES (?, ?, ?)',
             [idempotencyKey, 'operations/deploy', JSON.stringify(responseBody)]
         );
+
+        // Record this deployment in the audit trail
+        await logAction({
+            adminId: adminId,
+            adminName: adminName || 'Admin',
+            action: 'DEPLOY_OPERATION',
+            target: title
+        });
 
         res.status(201).json(responseBody);
 
@@ -122,13 +130,25 @@ router.get('/skills-distribution', async (req, res) => {
     }
 });
 
-// 5. MARK OPERATION AS COMPLETE
+// 5. MARK OPERATION AS COMPLETE (now logs to audit trail)
 router.patch('/:id/complete', async (req, res) => {
+    const { adminName } = req.body;
+
     try {
+        const [opRows] = await db.query('SELECT title FROM operations WHERE id = ?', [req.params.id]);
+        const opTitle = opRows[0] ? opRows[0].title : `Operation #${req.params.id}`;
+
         await db.query(
             "UPDATE operations SET status = 'completed' WHERE id = ?",
             [req.params.id]
         );
+
+        await logAction({
+            adminName: adminName || 'Admin',
+            action: 'COMPLETE_OPERATION',
+            target: opTitle
+        });
+
         res.json({ success: true });
     } catch (err) {
         console.error('Complete operation error:', err);
@@ -137,7 +157,7 @@ router.patch('/:id/complete', async (req, res) => {
 });
 
 
-// 6. ENROLL A VOLUNTEER IN AN OPERATION
+// 6. ENROLL A VOLUNTEER IN AN OPERATION (now with duplicate-submission detection)
 router.post('/:id/enroll', async (req, res) => {
     const operationId = req.params.id;
     const { volunteerId } = req.body;
@@ -158,7 +178,19 @@ router.post('/:id/enroll', async (req, res) => {
             return res.status(400).json({ success: false, error: "This operation is no longer active." });
         }
 
-        // 2. Count current enrollments (status = 'enrolled')
+        // 2. Detect near-duplicate submission: same volunteer, same operation, within the last 5 seconds.
+        //    Catches accidental double-clicks / rapid double-submits racing in before the first insert completes.
+        const [recentDuplicate] = await db.query(
+            `SELECT id FROM enrollments 
+             WHERE operation_id = ? AND volunteer_id = ? 
+             AND enrolled_at >= (NOW() - INTERVAL 5 SECOND)`,
+            [operationId, volunteerId]
+        );
+        if (recentDuplicate.length > 0) {
+            return res.status(429).json({ success: false, error: "Duplicate request detected. Please wait a moment and try again." });
+        }
+
+        // 3. Count current enrollments (status = 'enrolled')
         const [[{ count }]] = await db.query(
             "SELECT COUNT(*) AS count FROM enrollments WHERE operation_id = ? AND status = 'enrolled'",
             [operationId]
@@ -168,7 +200,7 @@ router.post('/:id/enroll', async (req, res) => {
             return res.status(400).json({ success: false, error: "Operation is full." });
         }
 
-        // 3. Prevent duplicate enrollment
+        // 4. Prevent duplicate enrollment (already joined previously, not just a rapid resubmit)
         const [existing] = await db.query(
             "SELECT id FROM enrollments WHERE operation_id = ? AND volunteer_id = ? AND status = 'enrolled'",
             [operationId, volunteerId]
@@ -177,7 +209,7 @@ router.post('/:id/enroll', async (req, res) => {
             return res.status(400).json({ success: false, error: "You already joined this operation." });
         }
 
-        // 4. Insert enrollment
+        // 5. Insert enrollment
         await db.query(
             "INSERT INTO enrollments (operation_id, volunteer_id, status, enrolled_at) VALUES (?, ?, 'enrolled', NOW())",
             [operationId, volunteerId]
@@ -191,7 +223,7 @@ router.post('/:id/enroll', async (req, res) => {
     }
 });
 
-// in routes/operations.js, add:
+// 7. FETCH A VOLUNTEER'S ENROLLED OPERATIONS ("My Tasks")
 router.get('/my-tasks/:volunteerId', async (req, res) => {
     try {
         const [tasks] = await db.query(`
@@ -207,4 +239,5 @@ router.get('/my-tasks/:volunteerId', async (req, res) => {
         res.status(500).json({ error: "Could not fetch your tasks." });
     }
 });
+
 module.exports = router;
