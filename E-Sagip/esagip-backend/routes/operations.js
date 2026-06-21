@@ -4,11 +4,27 @@ const router = express.Router();
 const db = require('../db');
 
 // 1. DEPLOY NEW OPERATION
+// 1. DEPLOY NEW OPERATION (with idempotency protection)
 router.post('/deploy', async (req, res) => {
-    const { title, location, scheduledAt, slots, description, skills, otherSkill, createdBy } = req.body;
+    const { title, location, scheduledAt, slots, description, skills, otherSkill, createdBy, idempotencyKey } = req.body;
+
+    if (!idempotencyKey) {
+        return res.status(400).json({ error: "Missing idempotencyKey." });
+    }
 
     try {
-        const adminId = createdBy || 3; // ← was re-declared as "createdBy" then used as "adminId" — now fixed
+        // Check if this exact request was already processed
+        const [existing] = await db.query(
+            'SELECT response_body FROM idempotency_keys WHERE idempotency_key = ? AND endpoint = ?',
+            [idempotencyKey, 'operations/deploy']
+        );
+
+        if (existing.length > 0) {
+            // Replay detected — return the same response as before, don't insert again
+            return res.status(200).json(JSON.parse(existing[0].response_body));
+        }
+
+        const adminId = createdBy || 3;
 
         const [opResult] = await db.query(
             `INSERT INTO operations (title, location, scheduled_at, volunteer_slots, description, status, created_by)
@@ -18,30 +34,27 @@ router.post('/deploy', async (req, res) => {
 
         const operationId = opResult.insertId;
 
-        // Link required skills
         if (skills && skills.length > 0) {
-            const [dbSkills] = await db.query(
-                'SELECT id FROM skills WHERE name IN (?)',
-                [skills]
-            );
+            const [dbSkills] = await db.query('SELECT id FROM skills WHERE name IN (?)', [skills]);
             if (dbSkills.length > 0) {
                 const opSkillMappings = dbSkills.map(s => [operationId, s.id]);
-                await db.query(
-                    'INSERT INTO operation_skills (operation_id, skill_id) VALUES ?',
-                    [opSkillMappings]
-                );
+                await db.query('INSERT INTO operation_skills (operation_id, skill_id) VALUES ?', [opSkillMappings]);
             }
         }
 
-        // Save "Others" free-text skill if provided
         if (otherSkill) {
-            await db.query(
-                'INSERT INTO operation_other_skills (operation_id, description) VALUES (?, ?)',
-                [operationId, otherSkill]
-            );
+            await db.query('INSERT INTO operation_other_skills (operation_id, description) VALUES (?, ?)', [operationId, otherSkill]);
         }
 
-        res.status(201).json({ success: true, operationId, message: "Operation deployed live!" });
+        const responseBody = { success: true, operationId, message: "Operation deployed live!" };
+
+        // Store this response under the idempotency key, so a retry returns the same result
+        await db.query(
+            'INSERT INTO idempotency_keys (idempotency_key, endpoint, response_body) VALUES (?, ?, ?)',
+            [idempotencyKey, 'operations/deploy', JSON.stringify(responseBody)]
+        );
+
+        res.status(201).json(responseBody);
 
     } catch (err) {
         console.error('Deploy operation error:', err);
