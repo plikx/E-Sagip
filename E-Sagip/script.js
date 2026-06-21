@@ -278,23 +278,28 @@ async function handleSaLogout() {
     const confirmed = confirm('Are you sure you want to logout?');
     if (!confirmed) return;
 
-    try {
+   ry {
         const currentUser = getCurrentUser();
-        if (currentUser) {
-            if (typeof logAuditAction === 'function') {
-    await logAuditAction('LOGOUT', currentUser.name, `Role: ${currentUser.role}`);
-    }
+
+        if (currentUser && typeof logAuditAction === 'function') {
+            await logAuditAction(
+                'LOGOUT',
+                currentUser.name,
+                `Role: ${currentUser.role}`
+            );
         }
+
+    } catch (err) {
+        console.error('Audit log failed:', err);
+
+    } finally {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('user');
         sessionStorage.clear();
+
         window.location.href = 'index.html';
-    } catch (err) {
-        console.error('Logout failed:', err);
-        alert('Something went wrong during logout. Please try again.');
     }
 }
-
 async function handleLogout() {
     const confirmed = confirm('Are you sure you want to logout?');
     if (!confirmed) return;
