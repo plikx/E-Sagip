@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const operationRoutes = require('./routes/operations');
+const auditRoutes = require('./routes/audit'); 
 dotenv.config();
 const app = express();
 app.use(cors());
@@ -16,7 +17,7 @@ app.get('/', (req, res) => {
 // Link Endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/operations', operationRoutes);
-
+app.use('/api/audit', auditRoutes);     
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`E-Sagip Backend Bridge online on port ${PORT}`);
