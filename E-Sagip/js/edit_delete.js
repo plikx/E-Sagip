@@ -27,70 +27,35 @@ function closeEditModal() {
   _activeCard = null;
 }
 
-async function saveEditModal() {
+function saveEditModal() {
   const name    = document.getElementById('edit-name').value.trim();
   const contact = document.getElementById('edit-contact').value.trim();
   const address = document.getElementById('edit-address').value.trim();
   const status  = document.getElementById('edit-status').value.trim();
 
-  if (!name || !contact || !address || !status) {
+  if (!name || !contact || !address) {
     alert('Please fill in all required fields.');
     return;
   }
 
-  if (!_activeCard) return;
+  if (_activeCard) {
+    const nameNode = _activeCard.querySelector('.vol-name');
+    nameNode.childNodes[0].textContent = name + ' ';
 
-  const volunteerId = _activeCard.dataset.id;
-
-  // Split name into first and last name
-  const nameParts = name.split(/\s+/);
-  const firstName = nameParts.slice(0, -1).join(' ') || nameParts[0] || '';
-  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-
-  try {
-    const url = typeof API_BASE_URL !== 'undefined'
-      ? `${API_BASE_URL}/auth/volunteers/${volunteerId}`
-      : `https://e-sagip-production.up.railway.app/api/auth/volunteers/${volunteerId}`;
-
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName,
-        lastName,
-        contactNumber: contact,
-        address,
-        status
-      })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || 'Failed to save changes.');
+    const badge = nameNode.querySelector('.vol-badge');
+    if (badge && status) {
+      badge.textContent = status;
+      badge.className   = 'vol-badge ' + status.toLowerCase();
     }
 
-    if (typeof loadVolunteers === 'function') {
-      await loadVolunteers();
-    } else {
-      // fallback DOM manipulation
-      const nameNode = _activeCard.querySelector('.vol-name');
-      nameNode.childNodes[0].textContent = name + ' ';
-      const badge = nameNode.querySelector('.vol-badge');
-      if (badge && status) {
-        badge.textContent = status;
-        badge.className   = 'vol-badge ' + status.toLowerCase();
-      }
-      _activeCard.querySelector('.vol-meta').textContent = address + ' · ' + contact;
-      const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-      const avatar   = _activeCard.querySelector('.vol-avatar');
-      if (avatar) avatar.textContent = initials;
-    }
+    _activeCard.querySelector('.vol-meta').textContent = address + ' · ' + contact;
 
-    closeEditModal();
-  } catch (err) {
-    console.error('Error saving volunteer changes:', err);
-    alert(err.message || 'Could not update volunteer details.');
+    const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const avatar   = _activeCard.querySelector('.vol-avatar');
+    if (avatar) avatar.textContent = initials;
   }
+
+  closeEditModal();
 }
 
 function openRemoveModal(btn) {

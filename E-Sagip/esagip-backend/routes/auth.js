@@ -329,28 +329,5 @@ router.post('/recovery/reset', async (req, res) => {
         res.status(500).json({ error: "Server error during password reset." });
     }
 });
-// 6. UPDATE VOLUNTEER DETAILS (for Edit Volunteer modal)
-router.put('/volunteers/:id', async (req, res) => {
-    const { firstName, lastName, contactNumber, address, status } = req.body;
-    const volunteerId = req.params.id;
-
-    if (!firstName || !lastName || !contactNumber || !address || !status) {
-        return res.status(400).json({ error: "All fields are required." });
-    }
-
-    try {
-        await db.query(
-            `UPDATE volunteers 
-             SET first_name = ?, last_name = ?, contact_number = ?, address = ?, status = ?
-             WHERE id = ?`,
-            [firstName, lastName, contactNumber, address, status, volunteerId]
-        );
-        res.json({ success: true, message: "Volunteer updated successfully!" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Server error updating volunteer details." });
-    }
-});
-
 module.exports = router;
 

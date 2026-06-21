@@ -38,24 +38,18 @@ function renderVolunteers(volunteers) {
     volList.innerHTML = volunteers.map(v => {
         const initials = (v.first_name[0] || '') + (v.last_name[0] || '');
         const skillTags = (v.skills || []).map(s => `<span class="vstag">${s}</span>`).join('');
-        
-        const approveBtnHtml = v.status === 'active' 
-            ? `<button class="v-approve approved" disabled>✓ Approved</button>`
-            : `<button class="v-approve" onclick="approveVolunteer(${v.id})">✓ Approve</button>`;
-
         return `
             <div class="vol-card" data-id="${v.id}">
                 <div class="vol-ops">
                     <div class="vol-avatar">${initials.toUpperCase()}</div>
                     <div class="vol-info">
-                        <div class="vol-name">${v.first_name} ${v.last_name} <span class="vol-badge ${v.status.toLowerCase()}">${v.status}</span></div>
+                        <div class="vol-name">${v.first_name} ${v.last_name} <span class="vol-badge ${v.status}">${v.status}</span></div>
                         <div class="vol-meta">${v.address} · ${v.contact_number}</div>
                         <div class="vol-skills-row">${skillTags}</div>
                     </div>
                 </div>
                 <div class="vol-ops-btn">
-                    ${approveBtnHtml}
-                    <button class="v-edit" onclick="openEditModal(this)">✏ Edit</button>
+                    <button class="v-approve" onclick="approveVolunteer(${v.id})">✓ Approve</button>
                     <button class="v-remove" onclick="removeVolunteer(${v.id})">🗑 Remove</button>
                 </div>
             </div>

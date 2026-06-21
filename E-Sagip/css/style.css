@@ -1094,18 +1094,13 @@ a {
 }
 
 .vol-badge.active {
-  background: rgba(34, 197, 94, 0.24) !important;
-  color: rgb(21, 128, 61) !important;
+  background: rgba(35, 185, 42, 0.24);
+  color: rgb(3, 49, 3);
 }
 
-.vol-badge.pending {
-  background: rgba(245, 158, 11, 0.24) !important;
-  color: rgb(120, 53, 4) !important;
-}
-
-.vol-badge.inactive {
-  background: rgba(239, 68, 68, 0.24) !important;
-  color: rgb(153, 27, 27) !important;
+.vol-badge.inactive{
+  background: rgba(209, 88, 104, 0.24);
+  color: rgb(49, 3, 3);
 }
 
 .vol-meta {
@@ -1213,14 +1208,6 @@ a {
   color: rgb(16, 69, 16);
     transition: background-color 0.6s ease, color 0.6s ease;
   cursor: pointer;
-}
-
-.v-approve.approved {
-  background-color: rgb(42, 107, 42) !important;
-  color: var(--white) !important;
-  border-color: rgb(42, 107, 42) !important;
-  cursor: default !important;
-  pointer-events: none !important;
 }
 
 .vol-count {
