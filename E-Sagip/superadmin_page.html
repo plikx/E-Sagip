@@ -1,578 +1,909 @@
-/* ============================================================
-           SUPERADMIN
-   ============================================================ */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Sagip – Super Admin Portal</title>
+   <link rel="icon" href="Images/628_icon.png" type="image/png" />
+  <link rel="stylesheet" href="style.css" >
+   <link rel="stylesheet" href="style2.css" >
+  <link rel="stylesheet" href="mobile.css">
+  
 
+  <link rel="icon" href="Images/628_icon.png" type="image/png" />
+  
+</head>
+<body class="superadmin-page">
 
-// ---------- Tab navigation ----------
-function switchSubNav(button, tab) {
-
-    document.querySelectorAll(".subnav-btn").forEach(btn => {
-        btn.classList.remove("active");
-    });
-
-    button.classList.add("active");
-
-    document.querySelectorAll(".dashboard-content").forEach(tabContent => {
-        tabContent.classList.add("hidden");
-    });
-
-    const activeTab = document.getElementById("tab-" + tab);
-
-    if (activeTab) {
-        activeTab.classList.remove("hidden");
-    }
-
-}
-
-// ---------- New Op: skill pill multi-select ----------
-document.querySelectorAll('#newop-skills .pill').forEach(p => {
-  p.addEventListener('click', () => p.classList.toggle('selected'));
-});
-
-// ---------- Data ----------
-const skills = [
-  { name: "Basic First Aid / CPR", count: 2 },
-  { name: "Medical Professional", count: 2 },
-  { name: "Relief Goods Packing", count: 1 },
-  { name: "Debris Clearing & Heavy Lifting", count: 2 },
-  { name: "Driver (4-Wheel / Truck / Van)", count: 1 },
-  { name: "Boat / Bangka Operator", count: 1 },
-];
-
-const maxSkillCount = Math.max(...skills.map(s => s.count));
-
-const activeOps = [
-  {
-    title: "Flood Relief Distribution",
-    location: "Purok 3, Brgy. 628",
-    schedule: "June 10, 2026 · 7:00 AM",
-    filled: 14,
-    total: 20
-  },
-  {
-    title: "Debris Clearing Brigade",
-    location: "Purok 5, Brgy. 628",
-    schedule: "June 12, 2026 · 6:00 AM",
-    filled: 9,
-    total: 15
-  },
-  {
-    title: "Medical Mission",
-    location: "Purok 1, Brgy. 628",
-    schedule: "June 14, 2026 · 8:00 AM",
-    filled: 8,
-    total: 12
-  },
-  {
-    title: "Evacuation Center Support",
-    location: "Purok 6, Brgy. 628",
-    schedule: "June 16, 2026 · 5:00 PM",
-    filled: 5,
-    total: 10
-  }
-];
-
-
-// ---------- Render: Skills distribution ----------
-const skillsHTML = skills.map(s => `
-<div class="skill-row">
-  <div class="skill-row-top">
-    <span>${s.name}</span>
-    <span>${s.count}</span>
-  </div>
-  <div class="bar-track">
-    <div class="bar-fill" style="width:${(s.count / maxSkillCount) * 100}%"></div>
-  </div>
-</div>
-`).join("");
-
-const skillsContainer = document.getElementById("skills-distribution");
-
-if (skillsContainer) {
-    skillsContainer.innerHTML = skillsHTML;
-}
-
-// ---------- Render: Active Operations ----------
-const opsHTML = activeOps.map(op => {
-  const pct = Math.round((op.filled / op.total) * 100);
-
-  return `
-  <div class="card op-card">
-    <div class="op-top">
-      <div>
-        <div class="op-title">${op.title}</div>
-        <div class="op-meta">${op.location}</div>
-        <div class="op-meta">${op.schedule}</div>
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <div class="topnav-logo">
+      <div class="shield-sm">
+        <img src="Images/628_logo.png" alt="E-Sagip Logo">
       </div>
-
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="op-count">${op.filled}/${op.total}</span>
+      <div class="topnav-brand">
+        <h2>E-Sagip</h2>
+        <p>Superadmin · Chief Administrator</p>
       </div>
     </div>
+    <div class="topnav-spacer"></div>
+    <div class="topnav-actions">
+      <button class="icon-btn" title="Location" aria-label="Location" onclick="window.location.href='community_superadmin.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
 
-    <div class="op-progress">
-      <div class="bar-track">
-        <div class="bar-fill"
-          style="width:${pct}%;background:var(--maroon-600)">
+        </svg>
+      </button>
+      <button class="icon-btn" title="Logout" aria-label="Logout" onclick="handleSaLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Sub Nav -->
+  <nav class="subnav">
+    <button class="subnav-btn active" data-tab="dashboard" onclick="switchSubNav(this, 'dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      Dashboard
+    </button>
+    <button class="subnav-btn" data-tab="newop" onclick="switchSubNav(this, 'newop')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      New Op
+    </button>
+    <button class="subnav-btn" data-tab="volunteers" onclick="switchSubNav(this, 'volunteers')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Volunteers
+    </button>
+
+    <button class="subnav-btn"
+        data-tab="admins"
+        onclick="switchSubNav(this, 'admins')">
+
+  <svg viewBox="0 0 24 24"
+       fill="none"
+       stroke="currentColor"
+       stroke-width="2">
+
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+
+    <circle cx="18" cy="8" r="3"/>
+    <path d="M18 13v6"/>
+    <path d="M15 16h6"/>
+
+  </svg>
+
+  Admins
+
+</button>
+
+    <button class="subnav-btn" data-tab="feed" onclick="switchSubNav(this, 'feed')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/>
+        <circle cx="5" cy="19" r="1"/>
+      </svg>
+      Feed
+    </button>
+
+  <!-- Audit Log button -->
+  <!-- ============================================================
+     AUDIT LOG TAB  —  add this subnav button after the Feed button
+     ============================================================ -->
+
+<!-- 1.  SUBNAV BUTTON  (paste after the Feed <button>) -->
+<button class="subnav-btn" data-tab="auditlog" onclick="switchSubNav(this, 'auditlog')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <polyline points="10 9 9 9 8 9"/>
+  </svg>
+  Audit Log
+</button>
+  </nav>
+
+
+
+
+  <!-- Dashboard Tab -->
+  <div id="tab-dashboard" class="dashboard-content">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Volunteers</div>
+          <div class="stat-value-v" id="totalVolunteers">0</div>
+          <div class="stat-sub">0 active</div>
+        </div>
+        <div class="stat-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Active Operations</div>
+          <div class="stat-value-op" id="activeOperations">0</div>
+          <div class="stat-sub">0 enrolled</div>
+        </div>
+        <div class="stat-icon orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
         </div>
       </div>
     </div>
 
-    <button class="complete-btn">
-      Complete Operation
-    </button>
+
+
+    <!-- Export System Data -->
+
+<div class="section-title">
+
+    Export System Data
+
+</div>
+
+<div class="export-card">
+
+    <div class="export-row">
+
+    <div class="export-left">
+
+        <strong>Export Volunteer Database</strong>
+
+        <span id="volunteerRecordCount">
+            0 records
+        </span>
+
+    </div>
+
+    <button class="export-right" onclick="printVol()">
+
+        Export
+
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+
+            <polyline points="7 10 12 15 17 10"/>
+
+            <line x1="12"
+                  y1="15"
+                  x2="12"
+                  y2="3"/>
+
+        </svg>
+
+      </button>
+
+</div>
+
+    <div class="export-row">
+
+    <div class="export-left">
+
+        <strong>Export Operations Log</strong>
+
+        <span id="operationRecordCount">
+            0 operations
+        </span>
+
+    </div>
+
+    <button class="export-right" onclick="printLog()">
+
+        Export
+
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+
+            <polyline points="7 10 12 15 17 10"/>
+
+            <line x1="12"
+                  y1="15"
+                  x2="12"
+                  y2="3"/>
+
+        </svg>
+
+      </button>
+
+</div>
+
+    <div class="export-row">
+
+    <div class="export-left">
+
+        <strong>Export Admin Accounts</strong>
+
+        <span id="adminRecordCount">
+            0 accounts
+        </span>
+
+    </div>
+
+    <button class="export-right" onclick="printAdmin()">
+
+        Export
+
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+
+            <polyline points="7 10 12 15 17 10"/>
+
+            <line x1="12"
+                  y1="15"
+                  x2="12"
+                  y2="3"/>
+
+        </svg>
+
+      </button>
+
+
+</div>
+</div>
+
+    <!-- Volunteer Skills Distribution -->
+    <div class="skills-card">
+      <div class="section-title">Volunteer Skills Distribution</div>
+      <div class="skill-row">
+        <span class="skill-label">Basic First Aid / CPR</span>
+        <div class="skill-bar-wrap"><div class="skill-bar" style="width:0%"></div></div>
+        <span class="skill-count">0</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Medical Professional</span>
+        <div class="skill-bar-wrap"><div class="skill-bar" style="width:0%"></div></div>
+        <span class="skill-count">0</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Relief Goods Packing</span>
+        <div class="skill-bar-wrap"><div class="skill-bar" style="width:0%"></div></div>
+        <span class="skill-count">0</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Debris Clearing & Heavy Lifting</span>
+        <div class="skill-bar-wrap"><div class="skill-bar" style="width:0%"></div></div>
+        <span class="skill-count">0</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Driver (4-Wheel / Truck / Van)</span>
+        <div class="skill-bar-wrap"><div class="skill-bar" style="width:0%"></div></div>
+        <span class="skill-count">0</span>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Boat / Bangka Operator</span>
+        <div class="skill-bar-wrap"><div class="skill-bar" style="width:0%"></div></div>
+        <span class="skill-count">0</span>
+      </div>
+    </div>
+    
+
+    <!-- Active Operations -->
+    <!--------Sample-------->
+    <div class="section-title">Active Operations</div>
+    <div class="operations-list" id="operation-list">
+
+    <div class="empty-state">
+
+        <div class="empty-icon">
+            🚨
+        </div>
+
+        <h3>No Active Operations</h3>
+
+        <p>
+            There are currently no active disaster response
+            operations. Create a new operation to begin
+            volunteer coordination.
+        </p>
+
+        <button class="empty-btn"
+                onclick="switchSubNav(document.querySelector('[onclick*=newop]'),'newop')">
+            Create New Operation
+        </button>
+
+    </div>
+
+</div>
+
+    </div>
   </div>
-  `;
-}).join("");
 
-const activeOpsContainer = document.getElementById("active-ops");
-
-if (activeOpsContainer) {
-    activeOpsContainer.innerHTML = opsHTML;
-}
-
-// ---------- Superadmin Volunteer Directory (backed by real API data) ----------
-// NOTE: all names below are prefixed "sa" (superadmin) to avoid colliding with
-// script.js, which already defines its own global `renderVolunteers`,
-// `allVolunteers`, `filterVolunteers`, etc. for the regular admin page.
-
-let saVolunteers = [];
-let saAdmins = [];
-let saActiveSkillFilter = "All Skills";
-let saSearchTerm = "";
-
-async function loadVolunteersForSuperadmin() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/volunteers`);
-    const data = await res.json();
-
-    // Adapt backend shape (first_name/last_name/skills array) to what this page's render expects
-    saVolunteers = data.map(v => ({
-      name: `${v.first_name} ${v.last_name}`,
-      initials: ((v.first_name?.[0] || '') + (v.last_name?.[0] || '')).toUpperCase(),
-      status: v.status,
-      location: v.address,
-      phone: v.contact_number,
-      skills: v.skills || [],
-      ops: v.ops || 0
-    }));
-
-    renderSaFilters();
-    renderSaVolunteers();
-  } catch (err) {
-    console.error('Failed to load volunteers for superadmin:', err);
-  }
-}
-
-function renderSaFilters() {
-  const uniqueSkills = ["All Skills", ...new Set(saVolunteers.flatMap(v => v.skills))];
-  const filterContainer = document.getElementById("skill-filters");
-  if (!filterContainer) return;
-
-  filterContainer.innerHTML = uniqueSkills.map(skill => `
-    <button class="filter-pill ${skill === saActiveSkillFilter ? "active" : ""}" data-skill="${skill}">
-      ${skill}
-    </button>
-  `).join("");
-
-  document.querySelectorAll(".filter-pill").forEach(btn => {
-    btn.addEventListener("click", () => {
-      saActiveSkillFilter = btn.dataset.skill;
-      renderSaFilters();
-      renderSaVolunteers();
-    });
-  });
-}
-
-function renderSaVolunteers() {
-  const resultsCount = document.getElementById("results-count");
-  const volunteerList = document.getElementById("vol-list");
-  if (!resultsCount || !volunteerList) return;
-
-  const term = saSearchTerm.toLowerCase();
-
-  const filtered = saVolunteers.filter(v => {
-    const matchesSkill = saActiveSkillFilter === "All Skills" || v.skills.includes(saActiveSkillFilter);
-    const matchesSearch = v.name.toLowerCase().includes(term) ||
-      v.skills.some(s => s.toLowerCase().includes(term));
-    return matchesSkill && matchesSearch;
-  });
-
-  resultsCount.textContent = `${filtered.length} volunteer${filtered.length === 1 ? "" : "s"} found`;
-
-  volunteerList.innerHTML = filtered.map(v => `
-    <div class="card vol-card">
-      <div class="vol-top">
-        <div class="vol-left">
-          <div class="avatar">${v.initials}</div>
-          <div>
-            <div class="vol-name-row">
-              <span class="vol-name">${v.name}</span>
-              <span class="status-badge ${v.status}">${v.status}</span>
-            </div>
-            <div class="vol-meta">${v.location}</div>
-            <div class="vol-meta">${v.phone}</div>
-            <div class="vol-skills">
-              ${v.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join("")}
-            </div>
+  <!-- New Op Tab -->
+  <div id="tab-newop" class="dashboard-content hidden">
+    <div class="section-title">Deploy New Operation</div>
+    <div class="newop-card">
+      <div class="form-group">
+        <label>Operation Title<span class="req">*</span></label>
+        <div class="input-wrap">
+          <input type="text" placeholder="e.g. Flood Relief Distribution" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Location <span class="req">*</span>
+        </label>
+        <div class="input-wrap">
+          <input type="text" placeholder="Purok/Street, Brgy. 628, Sta. Mesa" />
+        </div>
+      </div>
+      <div class="newop-row">
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Schedule <span class="req">*</span>
+          </label>
+          <div class="input-wrap">
+            <input type="datetime-local" id="sched"/>
           </div>
         </div>
-        <div class="vol-ops">
-          <div class="num">${v.ops}</div>
-          <div class="lbl">ops</div>
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Volunteer Slots <span class="req">*</span>
+          </label>
+          <div class="input-wrap">
+            <input type="number" placeholder="e.g. 20" min="1" max="1000" id="slots"/>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="desc-op" placeholder="Describe the operation objectives and tasks…" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Required Skills</label>
+        <div class="skill-tags-wrap" id="skill-tags">
+          <label><input type="checkbox" value="Relief Goods Packing"><span class="skill-tag">Relief Goods Packing</span></label>
+          <label><input type="checkbox" value="Donation Sorting"><span class="skill-tag">Donation Sorting</span></label>
+          <label><input type="checkbox" value="Inventory & Listing"><span class="skill-tag">Inventory & Listing</span></label>
+          <label><input type="checkbox" value="Debris Clearing & Heavy Lifting"><span class="skill-tag">Debris Clearing & Heavy Lifting</span></label>
+          <label><input type="checkbox" value="Mud Clearing & Sweeping"><span class="skill-tag">Mud Clearing & Sweeping</span></label>
+          <label><input type="checkbox" value="Basic Carpentry"><span class="skill-tag">Basic Carpentry</span></label>
+          <label><input type="checkbox" value="Community Kitchen / Cooking"><span class="skill-tag">Community Kitchen / Cooking</span></label>
+          <label><input type="checkbox" value="Crowd Control & Ushering"><span class="skill-tag">Crowd Control & Ushering</span></label>
+          <label><input type="checkbox" value="Child & Elderly Care"><span class="skill-tag">Child & Elderly Care</span></label>
+          <label><input type="checkbox" value="Basic First Aid / CPR"><span class="skill-tag">Basic First Aid / CPR</span></label>
+          <label><input type="checkbox" value="Medical Professional"><span class="skill-tag">Medical Professional</span></label>
+          <label><input type="checkbox" value="Psychological First Aid"><span class="skill-tag">Psychological First Aid</span></label>
+          <label><input type="checkbox" value="Driver (4-Wheel / Truck / Van)"><span class="skill-tag">Driver (4-Wheel / Truck / Van)</span></label>
+          <label><input type="checkbox" value="Basic Electrical / Wiring Safety"><span class="skill-tag">Basic Electrical / Wiring Safety</span></label>
+          <label><input type="checkbox" value="Boat / Bangka Operator"><span class="skill-tag">Boat / Bangka Operator</span></label>
+          <label><input type="checkbox" value="None"><span class="skill-tag">None</span></label>
+          <label>
+            <input type="checkbox" value="Others" name="skill" id="skill-others" class="others" />
+            <span class="skill-tag">Others: Please Specify</span>
+          </label>
+          <div class="others-div hidden" id="others-div">
+            <label for="other-skill">Please describe other required skills:</label>
+            <textarea id="other-skill" class="other-skill" placeholder="Enter other skills here"></textarea>
+          </div>
+        </div>
+      </div>
+      <button class="btn-deploy" onclick="handleDeployOp()">🚀Deploy Operation</button>
+    </div>
+  </div>
+
+  <!-- Volunteers Tab -->
+  <div id="tab-volunteers" class="dashboard-content hidden">
+    <div class="print-vol" id="print-vol">
+    <div class="section-title">Volunteer Database</div>
+
+    <!-- Search -->
+    
+    <div class="vol-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="vol-search" placeholder="Search by name or skill…" oninput="filterVolunteers()" />
+    </div>
+
+    <!-- Skill filter chips -->
+    <div class="vol-filter-row" id="vol-filter-row">
+      <button class="vfilter-btn active" data-skill="all" onclick="setVolFilter(this,'all')">All Skills</button>
+      <button class="vfilter-btn" data-skill="Basic First Aid / CPR" onclick="setVolFilter(this,'Basic First Aid / CPR')">Basic First Aid / CPR</button>
+      <button class="vfilter-btn" data-skill="Medical Professional" onclick="setVolFilter(this,'Medical Professional')">Medical Professional</button>
+      <button class="vfilter-btn" data-skill="Psychological First Aid" onclick="setVolFilter(this,'Psychological First Aid')">Psychological First Aid</button>
+      <button class="vfilter-btn" data-skill="Relief Goods Packing" onclick="setVolFilter(this,'Relief Goods Packing')">Relief Goods Packing</button>
+      <button class="vfilter-btn" data-skill="Debris Clearing & Heavy Lifting" onclick="setVolFilter(this,'Debris Clearing & Heavy Lifting')">Debris Clearing & Heavy Lifting</button>
+      <button class="vfilter-btn" data-skill="Driver (4-Wheel / Truck / Van)" onclick="setVolFilter(this,'Driver (4-Wheel / Truck / Van)')">Driver</button>
+      <button class="vfilter-btn" data-skill="Boat / Bangka Operator" onclick="setVolFilter(this,'Boat / Bangka Operator')">Boat / Bangka Operator</button>
+    </div>
+
+    <p class="vol-count" id="vol-count">0 volunteers found</p>
+
+    <!--VOLUNTEER-->
+    
+    <div class="vol-list" id="vol-list">
+
+    <div class="empty-state">
+
+        <div class="empty-icon">
+            👥
+        </div>
+
+        <h3>No Volunteers Yet</h3>
+
+        <p>
+
+            Registered volunteers
+            will appear here once
+            they sign up.
+
+        </p>
+
+    </div>
+
+</div>
+</div>
+  </div>
+
+  <!-- Admins Tab -->
+<div id="tab-admins" class="dashboard-content hidden">
+
+  
+  <div class="print-admin">
+    <div class="section-title">Admin Accounts</div>
+
+    <div class="ad-search-wrap">
+
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             width="15"
+             height="15">
+
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21"
+                  x2="16.65"
+                  y2="16.65"/>
+
+        </svg>
+
+        <input type="text" placeholder="Search admin...">
+
+    </div>
+
+    <div class="admins-header">
+
+        <p class="ad-count" id="admin-count">0 administrator accounts</p>
+
+        <button class="btn-deploy admin-add-btn" onclick="openAddAdminModal()">+ Add Administrator</button>
+
+    </div>
+
+    <div id="adminContainer">
+
+      <div class="print-ad">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">👨‍💼</div>
+            <h3>No Administrator Accounts</h3>
+            <p>
+                There are currently no administrator accounts.
+                Administrator accounts created by the
+                Superadmin will appear here.
+            </p>
+            
+
+       </div>     
+
+          </div>
+    </div>
+
+    </div>
+</div>
+
+
+  <!-- Feed Tab -->
+  <div id="tab-feed" class="dashboard-content hidden">
+
+    <!-- Hero Banner -->
+    <div class="feed-hero">
+      <div class="feed-hero-overlay">
+        <div class="feed-hero-text">
+          <h2>Community Impact Feed</h2>
+          <p>Documenting the heart of Barangay 628</p>
         </div>
       </div>
     </div>
-  `).join("");
-}
 
-const saVolSearchInput = document.getElementById("vol-search");
-if (saVolSearchInput) {
-  saVolSearchInput.addEventListener("input", e => {
-    saSearchTerm = e.target.value;
-    renderSaVolunteers();
-  });
-}
+    <div class="feed-body">
 
-// Kick off the real data load
-document.addEventListener('DOMContentLoaded', loadVolunteersForSuperadmin);
+      <!-- Quote Card -->
+      <div class="feed-quote-card">
+        <div class="feed-quote-avatar"><h1>❝</h1></div>
+        <div class="feed-quote-text">
+          <em>Ang pagtulong sa kapwa ay pagtulong sa sarili. Every hand we extend in service multiplies the strength of our community.</em>
+          <div class="feed-quote-attr">— BDRRMC Brgy. 628</div>
+        </div>
+      </div>
 
-// ---------- Admin List ----------
+      <!-- Leaderboard -->
+      <div class="feed-section-card">
+        <div class="feed-section-header">
+          <span class="span1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Volunteer Leaderboard
+          </span>
+          <span class="feed-month">June 2026</span>
+        </div>
+        <div class="leaderboard-list" id="leaderboardContainer">
 
-function renderSaAdmins() {
-    const adminContainer = document.getElementById("adminContainer");
-    const adminCount = document.getElementById("admin-count");
+    <div class="leaderboard-empty">
 
-    if (adminContainer) {
-        adminContainer.innerHTML = saAdmins.map(a => `
-            <div class="card admin-card">
-              <div class="admin-top">
-                <div class="ad-logo">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                    <path d="M12 2L4 5v6c0 5.25 3.5 10.15 8 11.35C16.5 21.15 20 16.25 20 11V5L12 2z"/>
-                  </svg>
-                </div>
-                <div class="ad-meta">
-                  <div class="admin-name">${a.name}</div>
-                  <div class="admin-email">${a.email}</div>
-                  <span class="role-badge">admin</span>
-                </div>
-              </div>
+        <div class="empty-icon">
+            🏆
+        </div>
 
-              <hr class="ad-divider">
+        <h3>No Leaderboard Yet</h3>
 
-              <div class="ad-btn">
-                <button class="a-edit" onclick="openAdminEditModal(this)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                  Edit
-                </button>
-                <button class="a-remove" onclick="openAdminDeleteModal(this)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    <path d="M10 11v6"/>
-                    <path d="M14 11v6"/>
-                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                  </svg>
-                  Remove
-                </button>
-              </div>
-            </div>
-        `).join("");
-    }
+        <p>
 
-    if (adminCount) {
-        adminCount.textContent = `${saAdmins.length} administrator account${saAdmins.length === 1 ? "" : "s"}`;
-    }
-}
+            Volunteer rankings
+            will appear after
+            completed operations.
 
-// Render admins once on load (currently an empty array until a real /admins endpoint exists)
-renderSaAdmins();
+        </p>
 
-/* ==========================================
-   SUPERADMIN COMMUNITY EDIT
-========================================== */
+    </div>
+</div>
+</div>
+      <!-- Impact Stats -->
+      <div class="impact-stats-row">
+        <div class="impact-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <div class="impact-num">0</div>
+          <div class="impact-lbl">Volunteers</div>
+        </div>
+        <div class="impact-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e0003c" stroke-width="2" width="30" height="30"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <div class="impact-num">0</div>
+          <div class="impact-lbl">Families Helped</div>
+        </div>
+        <div class="impact-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e8a000" stroke-width="2" width="22" height="22"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="impact-num">0</div>
+          <div class="impact-lbl">Operations</div>
+        </div>
+      </div>
 
-const editBtn = document.getElementById("editCommunityBtn");
+      
+<!-- Recent Successful Operations -->
+<div class="feed-section-header">
 
-if (editBtn) {
+    <span class="rso">
+        Recent Successful Operations
+    </span>
 
-    let editing = false;
+    <div class="feed-actions-header">
 
-    editBtn.addEventListener("click", () => {
+        <button id="addPostBtn" class="add-post-btn">
 
-        editing = !editing;
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
 
-        // =========================
-        // EDITABLE FIELDS
-        // =========================
-        document.querySelectorAll(".editable").forEach(el => {
-            el.contentEditable = editing;
-        });
-
-        // =========================
-        // QUICK FACTS
-        // =========================
-        const badge = document.getElementById("editingBadge");
-
-        if (badge) {
-            badge.style.display = editing ? "inline-flex" : "none";
-        }
-
-        const addFact = document.getElementById("addFactContainer");
-
-        if (addFact) {
-            addFact.style.display = editing ? "block" : "none";
-        }
-
-        // =========================
-        // BULLETIN
-        // =========================
-
-        const bulletinBadge =
-            document.getElementById("bulletinEditingBadge");
-
-        if (bulletinBadge) {
-            bulletinBadge.style.display =
-                editing ? "inline-flex" : "none";
-        }
-
-        document
-            .querySelectorAll(".addTipContainer")
-            .forEach(container => {
-
-                container.style.display =
-                    editing ? "block" : "none";
-
-            });
-             
-
-        // =========================
-        // CONTACTS
-        // =========================
-
-        const addContactBtn =
-            document.getElementById("addContactBtn");
-
-        if (addContactBtn) {
-
-            addContactBtn.style.display =
-                editing ? "flex" : "none";
-
-        }
-
-        // =========================
-        // MAP
-        // =========================
-
-        const addEvacBtn =
-            document.getElementById("addEvacBtn");
-
-        if (addEvacBtn) {
-
-            addEvacBtn.style.display =
-                editing ? "flex" : "none";
-
-        }
-
-        document
-            .querySelectorAll(".edit-evac-btn")
-            .forEach(btn => {
-
-                btn.style.display =
-                    editing ? "flex" : "none";
-
-            });
-
-        document.body.classList.toggle(
-            "community-editing",
-            editing
-        );
-
-        editBtn.innerHTML = editing
-        ? `
-            <svg viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2">
-
-                <polyline points="20 6 9 17 4 12"/>
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
 
             </svg>
 
-            <span>Done</span>
-        `
-        : `
-            <svg viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2">
+            Add Post
 
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+        </button>
 
-            </svg>
+        <a href="#" class="a-view">
+            View all →
+        </a>
 
-            <span>Edit</span>
-        `;
+    </div>
 
-    });
+</div>
 
-}
+<div class="recent-op-list" id="recent-op-list">
 
-//ADD FACT BUTTON
-const addFactBtn = document.getElementById("addFactBtn");
+  <div class="print-log">
 
-if(addFactBtn){
+  <div class="empty-state">
+        <div class="empty-icon">🚨</div>
+        <h3>No Feed Post Yet</h3>
+        <p>
+            There are currently no feed post
+        </p>
+       </div>
+  </div>
 
-    addFactBtn.addEventListener("click",()=>{
-
-const list = document.querySelector(".quick-facts-list");
-const addFactContainer =
-document.getElementById("addFactContainer");
-       if(!list) return;
-
-        const row=document.createElement("div");
-
-        row.className="fact-row";
-
-        row.innerHTML=`
-            <span class="fact-label editable" contenteditable="true">
-                New Label
-            </span>
-
-            <span class="fact-value editable" contenteditable="true">
-                New Value
-            </span>
-        `;
-
-      addFactContainer.before(row);
-
-    });
-
-}
-
-
-
-/* ==========================================================
-   BULLETIN - ADD TIP
-========================================================== */
-
-document.querySelectorAll(".add-tip-btn").forEach(button => {
-
-    button.addEventListener("click", function () {
-
-        const list =
-            this.closest(".bulletin-card")
-                .querySelector(".bulletin-list");
-
-        const total =
-            list.querySelectorAll(".bulletin-item").length + 1;
-
-        let color = "blue";
-
-        if (list.closest(".bulletin-card")
-                .querySelector(".bulletin-header")
-                .classList.contains("violet")) {
-
-            color = "violet";
-
-        } else if (list.closest(".bulletin-card")
-                .querySelector(".bulletin-header")
-                .classList.contains("red")) {
-
-            color = "red";
-
-        } else if (list.closest(".bulletin-card")
-                .querySelector(".bulletin-header")
-                .classList.contains("green")) {
-
-            color = "green";
-
-        }
-
-        const item = document.createElement("div");
-
-        item.className = "bulletin-item";
-
-        item.innerHTML = `
-
-            <span class="num-badge ${color}">
-                ${total}
-            </span>
-
-            <span class="editable"
-                  contenteditable="true">
-
-                New Tip
-
-            </span>
-
-        `;
-
-        list.appendChild(item);
-
-    });
-
-});
-
-/* ==========================================================
-   CONTACTS - ADD CONTACT
-========================================================== */
-
-const addContactBtn =
-document.getElementById("addContactBtn");
-
-if(addContactBtn){
-
-    addContactBtn.addEventListener("click",()=>{
-
-        const directory =
-        document.querySelector(".directory-card");
-
-        const row =
-        document.createElement("div");
-
-        row.className = "directory-row";
-
-        row.innerHTML = `
-
-            <div class="directory-icon maroon">
-
-                <svg viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2">
-
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
-
-                </svg>
-
-            </div>
-
-            <div class="directory-info">
-
-                <div class="dir-name">
-                    New Contact
-                </div>
-
-                <div class="dir-sub">
-                    Category
-                </div>
-
-            </div>
-
-            <div class="directory-number maroon">
-                Contact Number
-            </div>
-
-        `;
-
-        directory.appendChild(row);
-
-    });
-
-}
+</div>
+
+<!-- ADD / EDIT POST MODAL -->
+
+<div id="postModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h2>Add Feed Post</h2>
+        <button class="close-btn">×</button>
+        </div>
+        <div class="modal-q">
+        <div class="form-group" id="form-group">
+            <label for="postTitle">Operation Title<span class="req">*</span></label>
+            <input  type="text" id="postTitle" placeholder="e.g. Flood Relief Distribution">
+         </div>
+
+          <div class="form-group" id="form-group">
+            <label for="post-date">Date<span class="req">*</span></label>
+            <input  type="date" id="post-date" placeholder="e.g June 10, 2026">
+         </div>
+
+          <div class="form-group" id="form-group">
+            <label for="post-loc">Location<span class="req">*</span></label>
+            <input  type="text" id="post-loc" placeholder="Purok/Street, Brgy. 628">
+         </div>
+
+         <div class="form-group" id="form-group">
+            <label for="post-img">Image<span class="req">*</span></label>
+            <input  type="file" id="post-img">
+         </div>
+
+         <div class="form-group" id="form-group">
+            <label for="post-award">Highlight / Award<span class="req">*</span></label>
+            <input  type="text" id="post-award" placeholder="e.g. Most Impactful Operation">
+         </div>
+
+        <div class="form-group" id="form-group">
+            <label for="post-cap">Caption<span class="req">*</span></label>
+            <textarea id="post-cap" placeholder="Describe the operation..."></textarea>
+         </div>
+
+       <div class="vol-fam-container">
+
+        <div class="form-group" id="form-group">
+            <label for="post-vol">Volunteers<span class="req">*</span></label>
+            <input  type="number" id="post-vol" class="post-vol" placeholder="e.g 20">
+         </div>
+
+         <div class="form-group" id="form-group">
+            <label for="post-fam">Families Helped<span class="req">*</span></label>
+            <input  type="number" id="post-fam" class="post-fam" placeholder="e.g 40">
+         </div>
+
+       </div>
+
+       <div class="form-group" id="form-group">
+            <label for="post-tags">Tags</label>
+            <input  type="text" id="post-tags" placeholder="Add tag">
+         </div>
+         </div>
+        <div class="modal-buttons">
+
+            <button
+                id="cancelPost"
+                class="secondary-btn">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="publishPost"
+                class="primary-btn">
+
+                Publish
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+    </div>
+  </div>
+
+  <!-- Admin Edit Modal -->
+<div id="admin-edit-modal" class="hidden admin-modal-overlay">
+  <div class="admin-modal-box">
+    <div class="admin-modal-header">
+      <span>Edit Admin Account</span>
+      <button onclick="closeAdminEditModal()">✕</button>
+    </div>
+    <label>Full Name</label>
+    <input id="admin-edit-name" type="text" placeholder="Full Name" />
+    <label>Email</label>
+    <input id="admin-edit-email" type="email" placeholder="Email" />
+    <label>Password</label>
+    <input id="admin-edit-password" type="password" placeholder="••••••••••" />
+    <div class="admin-modal-actions">
+      <button class="btn-cancel" onclick="closeAdminEditModal()">Cancel</button>
+      <button class="btn-save" onclick="saveAdminEditModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Delete Modal -->
+<div id="admin-delete-modal" class="hidden admin-modal-overlay">
+  <div class="admin-modal-box">
+    <div class="admin-modal-header">
+      <span>Delete Admin Account?</span>
+    </div>
+    <div class="admin-delete-body">
+      <span>This will permanently remove <strong id="admin-delete-name"></strong>. They will no longer be able to log in.</span>
+    </div>
+    <div class="admin-modal-actions">
+      <button class="btn-cancel" onclick="closeAdminDeleteModal()">Cancel</button>
+      <button class="btn-delete" onclick="confirmAdminDeleteModal()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Post Modal -->
+<div id="editPostModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Edit Post</h2>
+      <button class="close-btn" id="closeEditModal">&times;</button>
+    </div>
+    <div class="modal-q">
+      <div class="form-group">
+        <label>Operation Title <span class="req">*</span></label>
+        <input type="text" id="edit-title">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="edit-date" class="edit-date">
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" id="edit-loc">
+      </div>
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" id="edit-img">
+      </div>
+      <div class="form-group">
+        <label>Highlight / Award</label>
+        <input type="text" id="edit-award">
+      </div>
+      <div class="form-group">
+        <label>Caption <span class="req">*</span></label>
+        <textarea id="edit-cap"></textarea>
+      </div>
+      <div class="vol-fam-container">
+        <div class="form-group">
+          <label>Volunteers</label>
+          <input type="number" id="edit-vol">
+        </div>
+        <div class="form-group">
+          <label>Families Helped</label>
+          <input type="number" id="edit-fam">
+        </div>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button class="secondary-btn" id="cancelEditPost">Cancel</button>
+      <button class="primary-btn" id="saveEditPost">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Post Modal -->
+<div id="deletePostModal" class="modal hidden">
+  <div class="modal-content" style="max-height: fit-content;">
+    <div class="modal-header">
+      <h2>Delete Post?</h2>
+    </div>
+    <p style="margin: 0 0 24px; color: #444;">
+      This will permanently remove <strong id="delete-post-title"></strong> from the feed.
+    </p>
+    <div class="modal-buttons">
+      <button class="secondary-btn" id="cancelDeletePost">Cancel</button>
+      <button class="primary-btn" id="confirmDeletePost" style="background:#c0392b;">Delete</button>
+    </div>
+  </div>
+</div>
+<!-- ============================================================
+     2.  TAB CONTENT  (paste before the closing </body> tag,
+         after the delete-post modal)
+     ============================================================ -->
+<div id="tab-auditlog" class="dashboard-content hidden">
+
+  <div class="section-title">Audit Log</div>
+
+  <!-- Toolbar -->
+  <div class="audit-toolbar">
+
+    <!-- Search -->
+    <div class="audit-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="audit-search" placeholder="Search by admin, action, or target…" oninput="filterAuditLogs()" />
+    </div>
+
+    <!-- Action-type filter -->
+    <div class="audit-filter-row" id="audit-filter-row">
+      <button class="vfilter-btn active" data-action="all"      onclick="setAuditFilter(this,'all')">All</button>
+      <button class="vfilter-btn" data-action="DEPLOY_OPERATION" onclick="setAuditFilter(this,'DEPLOY_OPERATION')">Deploy Op</button>
+      <button class="vfilter-btn" data-action="COMPLETE_OPERATION" onclick="setAuditFilter(this,'COMPLETE_OPERATION')">Complete Op</button>
+      <button class="vfilter-btn" data-action="APPROVE_VOLUNTEER"  onclick="setAuditFilter(this,'APPROVE_VOLUNTEER')">Approve Vol.</button>
+      <button class="vfilter-btn" data-action="REMOVE_VOLUNTEER"   onclick="setAuditFilter(this,'REMOVE_VOLUNTEER')">Remove Vol.</button>
+      <button class="vfilter-btn" data-action="EDIT_VOLUNTEER"     onclick="setAuditFilter(this,'EDIT_VOLUNTEER')">Edit Vol.</button>
+      <button class="vfilter-btn" data-action="ADD_ADMIN"          onclick="setAuditFilter(this,'ADD_ADMIN')">Add Admin</button>
+      <button class="vfilter-btn" data-action="EDIT_ADMIN"         onclick="setAuditFilter(this,'EDIT_ADMIN')">Edit Admin</button>
+      <button class="vfilter-btn" data-action="DELETE_ADMIN"       onclick="setAuditFilter(this,'DELETE_ADMIN')">Delete Admin</button>
+      <button class="vfilter-btn" data-action="PUBLISH_POST"       onclick="setAuditFilter(this,'PUBLISH_POST')">Post</button>
+      <button class="vfilter-btn" data-action="EDIT_POST"          onclick="setAuditFilter(this,'EDIT_POST')">Edit Post</button>
+      <button class="vfilter-btn" data-action="DELETE_POST"        onclick="setAuditFilter(this,'DELETE_POST')">Delete Post</button>
+    </div>
+
+    <!-- Count + Clear -->
+    <div class="audit-meta-row">
+      <p class="vol-count" id="audit-count">0 entries</p>
+      <button class="audit-clear-btn" onclick="clearAuditLogs()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        Clear All Logs
+      </button>
+    </div>
+  </div>
+
+  <!-- Log list -->
+  <div class="audit-list" id="audit-list">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No Activity Yet</h3>
+      <p>Admin actions will be recorded here automatically.</p>
+    </div>
+  </div>
+    </div> <!-- end audit-list -->
+
+</div> <!-- end tab-auditlog -->
+  <script src="superadmin.js"></script>
+  <script src="edit_delete.js"></script>
+  <script src="print.js"></script>
+  <script src="new_operation.js"></script>
+  <script src="feed_post.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
