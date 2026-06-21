@@ -63,14 +63,6 @@ function applyProfanityFilter(el) {
   });
 }
 
-document.getElementById('desc-op').addEventListener('input', function () {
-  if (this.value.length > 300) {
-    this.value = this.value.slice(0, 300);
-  }
-
-  document.getElementById('desc-count').textContent = this.value.length;
-});
-
 // ── Field Validation Helpers ──────────────────────────────────────────
 function setFieldError(el, hasError) {
   if (!el) return;
@@ -81,12 +73,22 @@ function clearAllFieldErrors(fields) {
   fields.forEach(el => setFieldError(el, false));
 }
 
+// ── Helper: get current user from localStorage ────────────────────────
+function _getCurrentUser() {
+  try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; }
+}
+
 // ── Logout ────────────────────────────────────────────────────────────
 async function handleSaLogout() {
   const confirmed = confirm('Are you sure you want to logout?');
   if (!confirmed) return;
 
   try {
+    const currentUser = _getCurrentUser();
+    if (currentUser && typeof logAuditAction === 'function') {
+      await logAuditAction('LOGOUT', currentUser.name, `Role: ${currentUser.role}`);
+    }
+    localStorage.removeItem('currentUser');
     localStorage.removeItem('user');
     sessionStorage.clear();
     window.location.href = 'index.html';
@@ -112,24 +114,17 @@ async function handleDeployOp() {
   const slots       = slotsInput?.value;
   const description = descInput?.value.trim() || '';
 
-  // ── Required fields validation with red border ───────────────────
-  let hasError = false;
-
+  // ── Required fields validation ───────────────────────────────────
   setFieldError(titleInput,    !title);
   setFieldError(locationInput, !location);
   setFieldError(schedInput,    !sched);
   setFieldError(slotsInput,    !slots);
 
   if (!title || !location || !sched || !slots) {
-    hasError = true;
-  }
-
-  if (hasError) {
     alert('Please fill in all required fields.');
     return;
   }
 
-  // ── Block deploy if any field triggered profanity ────────────────
   if (hasProfanityFlags()) {
     alert('One or more fields contain inappropriate content. Please clear them before submitting.');
     return;
@@ -151,10 +146,10 @@ async function handleDeployOp() {
 
   const scheduledAt = sched.replace('T', ' ') + ':00';
 
-  const adminId = (() => {
-    try { return JSON.parse(localStorage.getItem('user'))?.id || null; }
-    catch { return null; }
-  })();
+  // ── FIXED: read from 'currentUser' (consistent with login) ───────
+  const currentUser = _getCurrentUser();
+  const adminId     = currentUser?.id   || null;
+  const adminName   = currentUser?.name || 'Admin';  // ← now passed to backend
 
   const deployBtn = document.querySelector('.btn-deploy');
   if (deployBtn) { deployBtn.disabled = true; deployBtn.textContent = 'Deploying…'; }
@@ -171,7 +166,8 @@ async function handleDeployOp() {
         description,
         skills,
         otherSkill: othersChecked ? otherSkillVal : null,
-        createdBy: adminId,
+        createdBy:  adminId,
+        adminName,            // ← audit log will show real name
         idempotencyKey,
       }),
     });
@@ -179,6 +175,11 @@ async function handleDeployOp() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success) {
       throw new Error(data.error || `Server returned ${res.status}`);
+    }
+
+    // Also log from the frontend side for redundancy
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction('DEPLOY_OPERATION', title, `${slots} slots · ${location}`);
     }
 
     const dateObj       = new Date(sched);
@@ -251,20 +252,21 @@ async function handleDeployOp() {
     document.getElementById('tab-dashboard').classList.remove('hidden');
 
     // ── Reset form ───────────────────────────────────────────────
-    titleInput.value    = '';
-    locationInput.value = '';
-    schedInput.value    = '';
-    slotsInput.value    = '';
-    if (descInput) descInput.value = '';
+    if (titleInput)    titleInput.value    = '';
+    if (locationInput) locationInput.value = '';
+    if (schedInput)    schedInput.value    = '';
+    if (slotsInput)    slotsInput.value    = '';
+    if (descInput)     descInput.value     = '';
+
     document.querySelectorAll('#skill-tags input[type="checkbox"]').forEach(cb => {
       cb.checked  = false;
       cb.disabled = false;
     });
-    document.getElementById('others-div').classList.add('hidden');
-    document.getElementById('other-skill').value = '';
+    document.getElementById('others-div')?.classList.add('hidden');
+    const otherSkillEl = document.getElementById('other-skill');
+    if (otherSkillEl) otherSkillEl.value = '';
 
-    // clear red borders and profanity flags
-    clearAllFieldErrors([titleInput, locationInput, schedInput, slotsInput]);
+    clearAllFieldErrors([titleInput, locationInput, schedInput, slotsInput].filter(Boolean));
     Object.keys(profanityFlags).forEach(k => profanityFlags[k] = false);
 
     const descCount = document.getElementById('desc-count');
@@ -279,30 +281,44 @@ async function handleDeployOp() {
   }
 }
 
-// ── Mark an operation as complete ──────────────────────────────────
+// ── Mark an operation as complete ────────────────────────────────────
 async function completeOp(operationId) {
   if (!confirm('Mark this operation as complete?')) return;
 
+  // ── FIXED: passes adminName so audit log shows who completed it ──
+  const currentUser = _getCurrentUser();
+  const adminName   = currentUser?.name || 'Admin';
+
+  // Get operation title from the card for a clear audit entry
+  const card     = document.querySelector(`.op-card[data-op-id="${operationId}"]`);
+  const opTitle  = card?.querySelector('.op-name')?.textContent?.trim() || `Operation #${operationId}`;
+
   try {
     const res = await fetch(`${API_BASE_URL}/operations/${operationId}/complete`, {
-      method: 'PATCH'
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json' },   // ← required for body to be read
+      body:    JSON.stringify({ adminName }),              // ← audit log shows real name
     });
-    const data = await res.json().catch(() => ({}));
 
+    const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success) {
       throw new Error(data.error || `Server returned ${res.status}`);
     }
 
-    const card = document.querySelector(`.op-card[data-op-id="${operationId}"]`);
+    // Frontend audit log
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction('COMPLETE_OPERATION', opTitle, `Completed by ${adminName}`);
+    }
+
     if (card) card.remove();
 
     const statEl = document.querySelector('.stat-value-op');
     if (statEl) statEl.textContent = Math.max(0, Number(statEl.textContent) - 1);
 
     const list = document.getElementById('operation-list');
-    if (list && list.children.length === 0) {
-      const noOpt = document.querySelector('.empty-state');
-      if (noOpt) noOpt.style.display = '';
+    if (list && list.querySelectorAll('.op-card').length === 0) {
+      const emptyState = list.querySelector('.empty-state');
+      if (emptyState) emptyState.style.display = '';
     }
 
     alert('✅ Operation marked as complete.');
@@ -319,10 +335,11 @@ async function loadActiveOperations() {
     const ops = await res.json();
     if (!Array.isArray(ops) || ops.length === 0) return;
 
-    const noOpt = document.querySelector('.empty-state');
+    const noOpt = document.querySelector('#operation-list .empty-state');
     if (noOpt) noOpt.style.display = 'none';
 
     const list = document.getElementById('operation-list');
+    if (!list) return;
 
     ops.forEach(op => {
       const dateObj       = new Date(op.scheduled_at);
@@ -404,13 +421,21 @@ document.addEventListener('DOMContentLoaded', function () {
   const locationInput = document.querySelector('.form-group input[placeholder="Purok/Street, Brgy. 628, Sta. Mesa"]');
   const schedInput    = document.getElementById('sched');
   const slotsInput    = document.getElementById('slots');
-  const descInput     = document.getElementById('desc-op');
+
+  // ── FIXED: desc-op guarded — only attach listener if element exists
+  const descInput = document.getElementById('desc-op');
+  if (descInput) {
+    descInput.addEventListener('input', function () {
+      if (this.value.length > 300) this.value = this.value.slice(0, 300);
+      const counter = document.getElementById('desc-count');
+      if (counter) counter.textContent = this.value.length;
+    });
+  }
 
   applyProfanityFilter(titleInput);
   applyProfanityFilter(locationInput);
-  applyProfanityFilter(descInput);
+  applyProfanityFilter(descInput);   // safe — applyProfanityFilter already guards for null
 
-  // ── Clear red border as user fills in each field ─────────────────
   [titleInput, locationInput, schedInput, slotsInput].forEach(el => {
     if (!el) return;
     el.addEventListener('input', function () {
