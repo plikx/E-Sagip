@@ -219,3 +219,106 @@ router.delete('/volunteers/:id', async (req, res) => {
 });
 
 module.exports = router;
+// 7. FIND ACCOUNT BY EMAIL (Step 1 of password recovery)
+router.post('/recovery/find', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [volunteer] = await db.query('SELECT security_question FROM volunteers WHERE email = ?', [email]);
+        const [admin] = await db.query('SELECT security_question FROM admins WHERE email = ?', [email]);
+
+        const record = volunteer.length > 0 ? volunteer[0] : (admin.length > 0 ? admin[0] : null);
+
+        if (!record) {
+            return res.status(404).json({ error: "No account found with that email address." });
+        }
+
+        res.json({ securityQuestion: record.security_question });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error during account lookup." });
+    }
+});
+
+// 8. VERIFY SECURITY ANSWER (Step 2 of password recovery)
+router.post('/recovery/verify', async (req, res) => {
+    const { email, answer } = req.body;
+    try {
+        const [volunteer] = await db.query('SELECT security_answer FROM volunteers WHERE email = ?', [email]);
+        const [admin] = await db.query('SELECT security_answer FROM admins WHERE email = ?', [email]);
+
+        const record = volunteer.length > 0 ? volunteer[0] : (admin.length > 0 ? admin[0] : null);
+
+        if (!record) {
+            return res.status(404).json({ error: "Account not found." });
+        }
+
+        const isMatch = record.security_answer.trim().toLowerCase() === answer.trim().toLowerCase();
+        if (!isMatch) {
+            return res.status(401).json({ error: "That answer doesn't match our records." });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error during verification." });
+    }
+});
+
+// 9. RESET PASSWORD (Step 3 of password recovery)
+router.post('/recovery/reset', async (req, res) => {
+    const { email, answer, newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 8) {
+        return res.status(400).json({ error: "New password must be at least 8 characters." });
+    }
+
+    try {
+        const [volunteer] = await db.query('SELECT * FROM volunteers WHERE email = ?', [email]);
+        const [admin] = await db.query('SELECT * FROM admins WHERE email = ?', [email]);
+
+        const isVolunteer = volunteer.length > 0;
+        const user = isVolunteer ? volunteer[0] : (admin.length > 0 ? admin[0] : null);
+
+        if (!user) {
+            return res.status(404).json({ error: "Account not found." });
+        }
+
+        const isMatch = user.security_answer.trim().toLowerCase() === answer.trim().toLowerCase();
+        if (!isMatch) {
+            return res.status(401).json({ error: "Security verification failed." });
+        }
+
+        const userType = isVolunteer ? 'volunteer' : 'admin';
+        const table = isVolunteer ? 'volunteers' : 'admins';
+
+        // Rule: cannot contain email or full name
+        const personalInfoFields = isVolunteer
+            ? { email: user.email, firstName: user.first_name, lastName: user.last_name }
+            : { email: user.email, fullName: user.name };
+
+        const personalInfoMatch = findPersonalInfoMatch(newPassword, personalInfoFields);
+        if (personalInfoMatch) {
+            return res.status(400).json({ error: "Password cannot contain your name or email address." });
+        }
+
+        // Rule: block reuse of last 5 passwords
+        const reused = await isPasswordReused(newPassword, userType, user.id, user.password_hash);
+        if (reused) {
+            return res.status(400).json({ error: "You cannot reuse any of your last 5 passwords." });
+        }
+
+        const newHash = await bcrypt.hash(newPassword, 10);
+
+        await db.query(
+            `UPDATE ${table} SET password_hash = ?, password_changed_at = NOW() WHERE id = ?`,
+            [newHash, user.id]
+        );
+
+        await recordPasswordHistory(userType, user.id, user.password_hash);
+
+        res.json({ success: true, message: "Password updated successfully." });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error during password reset." });
+    }
+});
