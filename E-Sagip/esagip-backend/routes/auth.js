@@ -8,6 +8,7 @@ const {
     recordPasswordHistory,
     isPasswordExpired
 } = require('../utils/passwordRules');
+const { logAction } = require('./audit');
 
 // 1. VOLUNTEER REGISTRATION ENDPOINT
 router.post('/register', async (req, res) => {
@@ -196,10 +197,23 @@ router.get('/volunteers', async (req, res) => {
     }
 });
 
-// 5. APPROVE A VOLUNTEER
+// 5. APPROVE A VOLUNTEER (now logs to audit trail)
 router.put('/volunteers/:id/approve', async (req, res) => {
+    const { adminId, adminName } = req.body;
+
     try {
+        const [volRows] = await db.query('SELECT first_name, last_name FROM volunteers WHERE id = ?', [req.params.id]);
+        const volunteerName = volRows[0] ? `${volRows[0].first_name} ${volRows[0].last_name}` : `Volunteer #${req.params.id}`;
+
         await db.query('UPDATE volunteers SET status = ? WHERE id = ?', ['active', req.params.id]);
+
+        await logAction({
+            adminId: adminId || null,
+            adminName: adminName || 'Admin',
+            action: 'APPROVE_VOLUNTEER',
+            target: volunteerName
+        });
+
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -207,16 +221,30 @@ router.put('/volunteers/:id/approve', async (req, res) => {
     }
 });
 
-// 6. REMOVE A VOLUNTEER
+// 6. REMOVE A VOLUNTEER (now logs to audit trail)
 router.delete('/volunteers/:id', async (req, res) => {
+    const { adminId, adminName } = req.query;
+
     try {
+        const [volRows] = await db.query('SELECT first_name, last_name FROM volunteers WHERE id = ?', [req.params.id]);
+        const volunteerName = volRows[0] ? `${volRows[0].first_name} ${volRows[0].last_name}` : `Volunteer #${req.params.id}`;
+
         await db.query('DELETE FROM volunteers WHERE id = ?', [req.params.id]);
+
+        await logAction({
+            adminId: adminId || null,
+            adminName: adminName || 'Admin',
+            action: 'REMOVE_VOLUNTEER',
+            target: volunteerName
+        });
+
         res.json({ success: true });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Could not remove volunteer." });
     }
 });
+
 // 7. FIND ACCOUNT BY EMAIL (Step 1 of password recovery)
 router.post('/recovery/find', async (req, res) => {
     const { email } = req.body;
@@ -258,27 +286,6 @@ router.post('/recovery/verify', async (req, res) => {
 });
 
 // 9. RESET PASSWORD (Step 3 of password recovery)
-router.post('/recovery/verify', async (req, res) => {
-    const { email, answer } = req.body;
-    try {
-        const [volunteer] = await db.query('SELECT security_answer FROM volunteers WHERE email = ?', [email]);
-
-        if (volunteer.length === 0) {
-            return res.status(404).json({ error: "Account not found." });
-        }
-
-        const isMatch = volunteer[0].security_answer.trim().toLowerCase() === answer.trim().toLowerCase();
-        if (!isMatch) {
-            return res.status(401).json({ error: "That answer doesn't match our records." });
-        }
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Server error during verification." });
-    }
-});
-
 router.post('/recovery/reset', async (req, res) => {
     const { email, answer, newPassword } = req.body;
 
@@ -329,5 +336,5 @@ router.post('/recovery/reset', async (req, res) => {
         res.status(500).json({ error: "Server error during password reset." });
     }
 });
-module.exports = router;
 
+module.exports = router;
