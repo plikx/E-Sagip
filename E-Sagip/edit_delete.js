@@ -59,16 +59,17 @@ function saveEditModal() {
     }
 
     // Update in-memory array in superadmin.js (superadmin page)
-    if (typeof volunteers !== 'undefined') {
-      const idx = volunteers.findIndex(v => String(v.id) === String(id));
+    if (typeof saVolunteers !== 'undefined') {
+      const idx = saVolunteers.findIndex(v => String(v.id) === String(id));
       if (idx !== -1) {
-        volunteers[idx].name = name;
-        volunteers[idx].initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-        volunteers[idx].location = address;
-        volunteers[idx].phone = contact;
-        volunteers[idx].status = status;
+        saVolunteers[idx].name = name;
+        saVolunteers[idx].initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        saVolunteers[idx].location = address;
+        saVolunteers[idx].phone = contact;
+        saVolunteers[idx].status = status;
       }
     }
+
 
     // Update DOM directly
     const nameNode = _activeCard.querySelector('.vol-name');

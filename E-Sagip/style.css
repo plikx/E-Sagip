@@ -1046,7 +1046,7 @@ a {
   margin: 0;
 }
 
-.vol-card {
+.admin-page .vol-card {
   background: var(--white);
   border-radius: 10px;
   padding: 14px 16px;
@@ -1057,6 +1057,7 @@ a {
   gap: 16px;
   flex-direction: column;
 }
+
 
 .vol-avatar {
   width: 40px;
@@ -1130,7 +1131,7 @@ a {
   font-weight: 500;
 }
 
-.vol-ops {
+.admin-page .vol-ops {
   display: flex;
   width: 100%;
   flex-direction: row;
@@ -1139,6 +1140,7 @@ a {
   padding-left: 5px;
   padding-right: 5px;
 }
+
 
 .vol-ops-btn > * {
 
@@ -1236,22 +1238,19 @@ a {
   gap: 12px;
 }
 
-.vol-ops .vol-ops-num {
+.admin-page .vol-ops .vol-ops-num {
   background: rgba(122,0,36,0.08);
   color: var(--primary);
   border-radius: 10px;
   padding: 3px 9px;
   font-size: 11.5px;
   font-weight: 500;
-  display: inline-flex;
-  align-items: center;
 }
 
-.vol-ops .vol-ops-lbl {
-  font-size: 11.5px;
+
+.admin-page .vol-ops .vol-ops-lbl {
+  font-size: 12.5px;
   color: var(--text-muted);
-  display: inline-flex;
-  align-items: center;
 }
 
 /* ===== MODAL OVERLAY ===== */

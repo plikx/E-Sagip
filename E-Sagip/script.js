@@ -65,7 +65,14 @@ function filterVolunteers() {
     const searchInput = document.getElementById('vol-search');
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
+    if (document.body.classList.contains('superadmin-page')) {
+        saSearchTerm = query;
+        renderSaVolunteers();
+        return;
+    }
+
     let filtered = allVolunteers;
+
 
     if (activeSkillFilter !== 'all') {
         filtered = filtered.filter(v => (v.skills || []).includes(activeSkillFilter));
@@ -1250,8 +1257,12 @@ function validatePostForm() {
 /* ===== DOM READY ===== */
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (document.body.classList.contains('superadmin-page')) {
+        return;
+    }
     loadVolunteers();
     loadDashboardSummaryMetrics(); // ← added
+
 
     function restrictToLetters(el) {
         if (!el) return;
