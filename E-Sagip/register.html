@@ -58,14 +58,13 @@
       <h2>Personal Information</h2>
 
       <div class="reg-row">
-      
-        <div class="form-group">
+             <div class="form-group">
           <label>First Name <span class="req">*</span></label>
-          <input type="text" id="fname" name="fname" placeholder="Juan" required/>
+          <input type="text" id="fname" name="fname" placeholder="Juan" maxlength="60" required/>
         </div>
         <div class="form-group">
           <label>Last Name <span class="req">*</span></label>
-          <input type="text" id="lname" name="lname" placeholder="dela Cruz" required />
+          <input type="text" id="lname" name="lname" placeholder="dela Cruz" maxlength="60" required />
         </div>
       </div>
 
@@ -100,67 +99,75 @@
           <p>Tick this if your current home address is within Brgy. 628</p>
        </div>
 
-       <div class="address-div1">
-  <div class="address-label-container">
-    <label for="resident-address">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      Purok <span class="req">*</span>
-    </label>
+       <div class="address-unified-container" style="margin-top: 15px;">
+         <!-- Purok selector (only active/visible when resident is checked) -->
+         <div class="address-purok-div form-group" style="display: none; margin-bottom: 14px;">
+           <label for="resident-address">Purok <span class="req">*</span></label>
+           <select id="resident-address" name="resident-address">
+             <option value="" disabled selected>Select Purok</option>
+             <option>Purok 1, Brgy. 628, Sta. Mesa, Manila</option>
+             <option>Purok 2, Brgy. 628, Sta. Mesa, Manila</option>
+             <option>Purok 3, Brgy. 628, Sta. Mesa, Manila</option>
+             <option>Purok 4, Brgy. 628, Sta. Mesa, Manila</option>
+             <option>Purok 5, Brgy. 628, Sta. Mesa, Manila</option>
+             <option>Purok 6, Brgy. 628, Sta. Mesa, Manila</option>
+             <option>Purok 7, Brgy. 628, Sta. Mesa, Manila</option>
+           </select>
+         </div>
 
-  </div>
-  <select id="resident-address" name="resident-address">
-    <option value="" disabled selected>Select Purok</option>
-    <option>Purok 1, Brgy. 628, Sta. Mesa, Manila</option>
-    <option>Purok 2, Brgy. 628, Sta. Mesa, Manila</option>
-    <option>Purok 3, Brgy. 628, Sta. Mesa, Manila</option>
-    <option>Purok 4, Brgy. 628, Sta. Mesa, Manila</option>
-    <option>Purok 5, Brgy. 628, Sta. Mesa, Manila</option>
-    <option>Purok 6, Brgy. 628, Sta. Mesa, Manila</option>
-    <option>Purok 7, Brgy. 628, Sta. Mesa, Manila</option>
-  </select>
+          <!-- Region & City Select Dropdowns -->
+          <div class="reg-row">
+            <div class="form-group">
+              <label for="address-region">Region <span class="req">*</span></label>
+              <select id="address-region" name="address-region" required>
+                <option value="" disabled selected>Select Region</option>
+                <option value="NCR">National Capital Region (NCR)</option>
+                <option value="CAR">Cordillera Administrative Region (CAR)</option>
+                <option value="R1">Region I (Ilocos Region)</option>
+                <option value="R2">Region II (Cagayan Valley)</option>
+                <option value="R3">Region III (Central Luzon)</option>
+                <option value="R4A">Region IV-A (CALABARZON)</option>
+                <option value="MIMAROPA">MIMAROPA Region</option>
+                <option value="R5">Region V (Bicol Region)</option>
+                <option value="R6">Region VI (Western Visayas)</option>
+                <option value="R7">Region VII (Central Visayas)</option>
+                <option value="R8">Region VIII (Eastern Visayas)</option>
+                <option value="R9">Region IX (Zamboanga Peninsula)</option>
+                <option value="R10">Region X (Northern Mindanao)</option>
+                <option value="R11">Region XI (Davao Region)</option>
+                <option value="R12">Region XII (SOCCSKSARGEN)</option>
+                <option value="R13">Region XIII (Caraga)</option>
+                <option value="BARMM">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="address-city">City / Municipality <span class="req">*</span></label>
+              <select id="address-city" name="address-city" required>
+                <option value="" disabled selected>Select City</option>
+              </select>
+            </div>
+          </div>
 
-  <div class="address-label-container">
-  <label for="house-no">House No. / Street (Optional)</label>
-  </div>
-  <input type="text" name="house-no" id="house-no" placeholder="e.g. 12 Rizal St.">
-</div>
+          <!-- Barangay & Postal Code -->
+          <div class="reg-row">
+            <div class="form-group">
+              <label for="address-barangay">Barangay <span class="req">*</span></label>
+              <select id="address-barangay" name="address-barangay" required>
+                <option value="" disabled selected>Select Barangay</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="address-postal">Postal Code <span class="req">*</span></label>
+              <input type="text" id="address-postal" name="address-postal" placeholder="e.g. 1016" required />
+            </div>
+          </div>
 
-<div class="address-div2">
-  <div class="address-label-container">
-    <label for="outside-address">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      City/Municipality <span class="req">*</span>
-    </label>
-  </div>
-
-  
-  <select id="outside-address" name="outside-address">
-    <option value="" disabled selected>Select City/ Municipality</option>
-    <option>Manila (Other Barangay)</option>
-    <option>Quezon City</option>
-    <option>Caloocan</option>
-    <option>Las Piñas</option>
-    <option>Makati</option>
-    <option>Malabon</option>
-    <option>Mandaluyong</option>
-    <option>Marikina</option>
-    <option>Muntinlupa</option>
-    <option>Navotas</option>
-    <option>Parañaque</option>
-    <option>Pasay</option>
-    <option>Pasig</option>
-    <option>Pateros</option>
-    <option>San Juan</option>
-    <option>Taguig</option>
-    <option>Valenzuela</option>
-    <option>Outside Metro Manila</option>
-  </select>
-
-  <div class="address-label-container">
-    <label for="outside-address-brgy">Barangay (Optional)</label>
-  </div>
-  <input type="text" class="outside-address-brgy" id="outside-address-brgy" name="outside-address-brgy" placeholder="e.g. Brgy. San Antonio">
-</div>
+          <!-- Street Address -->
+          <div class="form-group">
+            <label for="address-street">Street Address <span class="req">*</span></label>
+            <input type="text" id="address-street" name="address-street" placeholder="e.g. 12 Rizal St. or House No." required />
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -421,6 +428,15 @@
     <strong>Volunteer Disclaimer</strong><br>
     By submitting this registration, you acknowledge the physical risks associated with disaster response, agree to follow all BDRRMC protocols and the Volunteer Code of Conduct, and consent to the collection, processing, and storage of your personal information solely for volunteer registration and management purposes in accordance with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>.
   </p>
+</div>
+
+<div class="form-group consent-cb-container" style="margin-top: 15px; background: none; border: none; padding: 0;">
+  <div class="cb-div" style="align-items: flex-start;">
+    <input type="checkbox" id="privacy-consent" name="privacy-consent" style="margin-top: 4px;" required />
+    <label for="privacy-consent" style="font-size: 13px; font-weight: normal; cursor: pointer; color: var(--text-dark); line-height: 1.4;">
+      I read and agree to the Volunteer Disclaimer and Data Privacy Consent <span class="req">*</span>
+    </label>
+  </div>
 </div>
       
 

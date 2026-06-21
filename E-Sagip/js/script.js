@@ -291,58 +291,528 @@ async function toggleOp(chevronEl) {
 /* ===== REGISTRATION PAGE ===== */
 
 let currentStep = 1;
+let formIsDirty = false;
 
-function goToStep(step) {
-    if (step === 2) {
-        const fname            = document.getElementById('fname')?.value.trim();
-        const lname            = document.getElementById('lname')?.value.trim();
-        const birthdate        = document.getElementById('birthdate')?.value;
-        const contact          = document.getElementById('contact')?.value.trim();
-        const email            = document.getElementById('email')?.value.trim();
-        const residentCheckbox = document.getElementById('resident');
-        const isResident       = residentCheckbox?.checked ?? false;
-        const residentAddress  = document.getElementById('resident-address')?.value.trim();
-        const outsideAddress   = document.getElementById('outside-address')?.value.trim();
+// Custom Validation Helper Functions
+function showFieldError(inputEl, message) {
+    if (!inputEl) return;
+    inputEl.classList.add('input-error');
+    
+    let helper = inputEl.parentNode.querySelector('.helper-text');
+    if (!helper) {
+        helper = document.createElement('span');
+        helper.className = 'helper-text';
+        inputEl.parentNode.appendChild(helper);
+    }
+    helper.textContent = message;
+}
 
-        if (!fname || !lname || !birthdate || !contact || !email) {
-            alert('Please fill in all required fields (First Name, Last Name, Birthdate, Contact Number, and Email).');
-            return;
-        }
-        if (!email.endsWith('@gmail.com')) {
-            alert('Email must be a @gmail.com address.');
-            document.getElementById('email').focus();
-            return;
-        }
+function clearFieldError(inputEl) {
+    if (!inputEl) return;
+    inputEl.classList.remove('input-error');
+    const helper = inputEl.parentNode.querySelector('.helper-text');
+    if (helper) {
+        helper.remove();
+    }
+}
 
-        const birth = new Date(birthdate);
+function validateName(val) {
+    const trimmed = val.trim();
+    if (trimmed.length < 2 || trimmed.length > 60) return false;
+    return /^[a-zA-Z'\-\s]+$/.test(trimmed);
+}
+
+const REGION_CITY_DATA = {
+    NCR: {
+        name: "National Capital Region (NCR)",
+        cities: ["Manila", "Quezon City", "Caloocan", "Makati", "Pasig", "Taguig", "Mandaluyong", "San Juan", "Las Piñas", "Malabon", "Muntinlupa", "Navotas", "Parañaque", "Pasay", "Pateros", "Valenzuela"]
+    },
+    CAR: {
+        name: "Cordillera Administrative Region (CAR)",
+        cities: ["Baguio City", "La Trinidad", "Tabuk", "Bangued", "Bontoc", "Lagawe", "Kabayan"]
+    },
+    R1: {
+        name: "Region I (Ilocos Region)",
+        cities: ["Laoag", "Vigan", "San Fernando (La Union)", "Dagupan", "Urdaneta", "Alaminos", "Lingayen"]
+    },
+    R2: {
+        name: "Region II (Cagayan Valley)",
+        cities: ["Tuguegarao", "Ilagan", "Santiago", "Cauayan", "Bayombong", "Basco", "Cabarroguis"]
+    },
+    R3: {
+        name: "Region III (Central Luzon)",
+        cities: ["Malolos", "San Fernando (Pampanga)", "Angeles", "Olongapo", "Tarlac City", "Cabanatuan", "Balanga", "Iba", "San Jose Del Monte"]
+    },
+    R4A: {
+        name: "Region IV-A (CALABARZON)",
+        cities: ["Antipolo", "Bacoor", "Imus", "Dasmariñas", "Calamba", "Santa Rosa", "Biñan", "Lipa", "Batangas City", "Lucena", "San Pablo"]
+    },
+    MIMAROPA: {
+        name: "MIMAROPA Region",
+        cities: ["Puerto Princesa", "Calapan", "Mamburao", "Odiongan", "Boac", "Romblon"]
+    },
+    R5: {
+        name: "Region V (Bicol Region)",
+        cities: ["Legazpi", "Naga", "Daet", "Sorsogon City", "Masbate City", "Virac"]
+    },
+    R6: {
+        name: "Region VI (Western Visayas)",
+        cities: ["Iloilo City", "Bacolod City", "Roxas City", "Kalibo", "San Jose de Buenavista", "Jordan"]
+    },
+    R7: {
+        name: "Region VII (Central Visayas)",
+        cities: ["Cebu City", "Mandaue", "Lapu-Lapu", "Dumaguete", "Tagbilaran", "Toledo", "Talisay"]
+    },
+    R8: {
+        name: "Region VIII (Eastern Visayas)",
+        cities: ["Tacloban", "Ormoc", "Calbayog", "Catbalogan", "Maasin", "Borongan", "Catarman"]
+    },
+    R9: {
+        name: "Region IX (Zamboanga Peninsula)",
+        cities: ["Zamboanga City", "Dipolog", "Pagadian", "Isabela City", "Dapitan"]
+    },
+    R10: {
+        name: "Region X (Northern Mindanao)",
+        cities: ["Cagayan de Oro", "Iligan", "Malaybalay", "Valencia", "Oroquieta", "Ozamiz"]
+    },
+    R11: {
+        name: "Region XI (Davao Region)",
+        cities: ["Davao City", "Tagum", "Digos", "Mati", "Panabo", "Samal"]
+    },
+    R12: {
+        name: "Region XII (SOCCSKSARGEN)",
+        cities: ["General Santos", "Koronadal", "Kidapawan", "Tacurong", "Cotabato City"]
+    },
+    R13: {
+        name: "Region XIII (Caraga)",
+        cities: ["Butuan", "Surigao City", "Cabadbaran", "Tandag", "Bislig"]
+    },
+    BARMM: {
+        name: "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)",
+        cities: ["Cotabato City", "Marawi", "Jolo", "Lamitan", "Bongao", "Shariff Aguak"]
+    }
+};
+
+function getBarangaysForCity(regionKey, cityVal) {
+    if (regionKey === 'NCR' && cityVal === 'Manila') {
+        return ["Barangay 628", "Barangay 627", "Barangay 629", "Barangay 630", "Barangay 631", "Barangay 632", "Barangay 633", "Barangay 634", "Barangay 635", "Barangay 636"];
+    }
+    return ["Poblacion", "San Jose", "San Antonio", "Santa Maria", "Concepcion", "San Vicente", "Santo Domingo", "Bagong Silang", "Santa Cruz", "Rosario", "San Miguel", "San Juan", "Magsaysay"];
+}
+
+function populateCities(regionKey) {
+    const citySelect = document.getElementById('address-city');
+    const brgySelect = document.getElementById('address-barangay');
+    if (!citySelect) return;
+
+    citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+    if (brgySelect) {
+        brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay</option>';
+    }
+
+    const regionData = REGION_CITY_DATA[regionKey];
+    if (!regionData) return;
+
+    regionData.cities.forEach(city => {
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        citySelect.appendChild(opt);
+    });
+}
+
+function populateBarangays(regionKey, cityVal) {
+    const brgySelect = document.getElementById('address-barangay');
+    if (!brgySelect) return;
+
+    brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay</option>';
+
+    const barangays = getBarangaysForCity(regionKey, cityVal);
+    if (!barangays) return;
+
+    barangays.forEach(brgy => {
+        const opt = document.createElement('option');
+        opt.value = brgy;
+        opt.textContent = brgy;
+        brgySelect.appendChild(opt);
+    });
+}
+
+function validatePostalCode(postal) {
+    const val = postal.trim();
+    return /^\d{4}$/.test(val);
+}
+
+function validateStep1() {
+    let isValid = true;
+
+    // First Name
+    const fnameInput = document.getElementById('fname');
+    const fnameVal = fnameInput?.value.trim() || '';
+    if (!fnameVal) {
+        showFieldError(fnameInput, 'First name is required.');
+        isValid = false;
+    } else if (!validateName(fnameVal)) {
+        showFieldError(fnameInput, 'First name must contain only letters, hyphens, apostrophes and be 2-60 characters.');
+        isValid = false;
+    } else {
+        clearFieldError(fnameInput);
+    }
+
+    // Last Name
+    const lnameInput = document.getElementById('lname');
+    const lnameVal = lnameInput?.value.trim() || '';
+    if (!lnameVal) {
+        showFieldError(lnameInput, 'Last name is required.');
+        isValid = false;
+    } else if (!validateName(lnameVal)) {
+        showFieldError(lnameInput, 'Last name must contain only letters, hyphens, apostrophes and be 2-60 characters.');
+        isValid = false;
+    } else {
+        clearFieldError(lnameInput);
+    }
+
+    // Birthdate
+    const birthdateInput = document.getElementById('birthdate');
+    const birthdateVal = birthdateInput?.value || '';
+    if (!birthdateVal) {
+        showFieldError(birthdateInput, 'Birthdate is required.');
+        isValid = false;
+    } else {
+        const birth = new Date(birthdateVal);
         const today = new Date();
-        const age   = today.getFullYear() - birth.getFullYear() -
+        const age = today.getFullYear() - birth.getFullYear() -
             (today.getMonth() < birth.getMonth() ||
             (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0);
 
         if (age < 18) {
-            alert('You must be at least 18 years old to register.');
-            return;
-        }
-        if (age > 120) {
-            alert('Please enter a valid birthdate. Age cannot be greater than 120 years.');
-            return;
-        }
-
-        if (isResident && !residentAddress) {
-            alert('Please select your Purok in Brgy. 628.');
-            return;
-        }
-        if (!isResident && !outsideAddress) {
-            alert('Please select your City/Municipality.');
-            return;
+            showFieldError(birthdateInput, 'You must be at least 18 years old to register.');
+            isValid = false;
+        } else if (age > 120) {
+            showFieldError(birthdateInput, 'Age cannot be greater than 120 years.');
+            isValid = false;
+        } else {
+            clearFieldError(birthdateInput);
         }
     }
 
-    if (step === 3) {
-        const skillSelection = document.querySelectorAll('input[name="skill"]:checked');
-        if (skillSelection.length === 0) {
-            alert('Please select at least one skill before continuing.');
+    // Contact Number
+    const contactInput = document.getElementById('contact');
+    const contactVal = contactInput?.value.trim() || '';
+    if (!contactVal) {
+        showFieldError(contactInput, 'Contact number is required.');
+        isValid = false;
+    } else if (!/^\d{11}$/.test(contactVal)) {
+        showFieldError(contactInput, 'Contact number must be exactly 11 digits.');
+        isValid = false;
+    } else {
+        clearFieldError(contactInput);
+    }
+
+    // Email Address
+    const emailInput = document.getElementById('email');
+    const emailVal = emailInput?.value.trim() || '';
+    if (!emailVal) {
+        showFieldError(emailInput, 'Email address is required.');
+        isValid = false;
+    } else if (!emailVal.endsWith('@gmail.com')) {
+        showFieldError(emailInput, 'Email must be a @gmail.com address.');
+        isValid = false;
+    } else {
+        clearFieldError(emailInput);
+    }
+
+    // Resident Purok & Address fields
+    const checkbox = document.getElementById('resident');
+    const isResident = checkbox?.checked ?? false;
+
+    if (isResident) {
+        const purokSelect = document.getElementById('resident-address');
+        if (!purokSelect?.value) {
+            showFieldError(purokSelect, 'Please select your Purok.');
+            isValid = false;
+        } else {
+            clearFieldError(purokSelect);
+        }
+    }
+
+    const regionSelect = document.getElementById('address-region');
+    const citySelect = document.getElementById('address-city');
+    const brgySelect = document.getElementById('address-barangay');
+    const streetInput = document.getElementById('address-street');
+    const postalInput = document.getElementById('address-postal');
+
+    if (!regionSelect?.value) {
+        showFieldError(regionSelect, 'Region is required.');
+        isValid = false;
+    } else {
+        clearFieldError(regionSelect);
+    }
+
+    if (!citySelect?.value) {
+        showFieldError(citySelect, 'City/Municipality is required.');
+        isValid = false;
+    } else {
+        clearFieldError(citySelect);
+    }
+
+    if (!brgySelect?.value) {
+        showFieldError(brgySelect, 'Barangay is required.');
+        isValid = false;
+    } else {
+        clearFieldError(brgySelect);
+    }
+
+    if (!streetInput?.value.trim()) {
+        showFieldError(streetInput, 'Street Address is required.');
+        isValid = false;
+    } else {
+        clearFieldError(streetInput);
+    }
+
+    // Postal Code Validation
+    const postalVal = postalInput?.value.trim() || '';
+    if (!postalVal) {
+        showFieldError(postalInput, 'Postal Code is required.');
+        isValid = false;
+    } else if (!validatePostalCode(postalVal)) {
+        showFieldError(postalInput, 'Format: 4 digits (e.g. 1016)');
+        isValid = false;
+    } else {
+        clearFieldError(postalInput);
+    }
+
+    return isValid;
+}
+
+function validateStep2() {
+    const skillSelection = document.querySelectorAll('input[name="skill"]:checked');
+    const buttonsDiv = document.querySelector('.step2-buttons');
+    if (skillSelection.length === 0) {
+        if (buttonsDiv) {
+            let helper = buttonsDiv.parentNode.querySelector('.skills-error-helper');
+            if (!helper) {
+                helper = document.createElement('span');
+                helper.className = 'helper-text skills-error-helper';
+                helper.style.marginBottom = '12px';
+                buttonsDiv.parentNode.insertBefore(helper, buttonsDiv);
+            }
+            helper.textContent = 'Please select at least one skill to continue.';
+        }
+        return false;
+    } else {
+        if (buttonsDiv) {
+            const helper = buttonsDiv.parentNode.querySelector('.skills-error-helper');
+            if (helper) helper.remove();
+        }
+        return true;
+    }
+}
+
+function validateStep3() {
+    let isValid = true;
+
+    // Security Question
+    const questionSelect = document.getElementById('sec-question');
+    if (!questionSelect?.value) {
+        showFieldError(questionSelect, 'Please select a security question.');
+        isValid = false;
+    } else {
+        clearFieldError(questionSelect);
+    }
+
+    // Security Answer
+    const answerInput = document.getElementById('sec-answer');
+    if (!answerInput?.value.trim()) {
+        showFieldError(answerInput, 'Security answer is required.');
+        isValid = false;
+    } else {
+        clearFieldError(answerInput);
+    }
+
+    // Password
+    const passwordInput = document.getElementById('reg-password');
+    const passwordVal = passwordInput?.value || '';
+    if (!passwordVal) {
+        showFieldError(passwordInput, 'Password is required.');
+        isValid = false;
+    } else if (passwordVal.length < 8) {
+        showFieldError(passwordInput, 'Password must be at least 8 characters.');
+        isValid = false;
+    } else {
+        clearFieldError(passwordInput);
+    }
+
+    // Confirm Password
+    const confirmInput = document.getElementById('reg-confirm');
+    const confirmVal = confirmInput?.value || '';
+    if (!confirmVal) {
+        showFieldError(confirmInput, 'Please confirm your password.');
+        isValid = false;
+    } else if (confirmVal !== passwordVal) {
+        showFieldError(confirmInput, 'Passwords do not match.');
+        isValid = false;
+    } else {
+        clearFieldError(confirmInput);
+    }
+
+    // Privacy Consent Checkbox
+    const consentInput = document.getElementById('privacy-consent');
+    if (consentInput && !consentInput.checked) {
+        showFieldError(consentInput, 'You must agree to the terms and privacy consent.');
+        isValid = false;
+    } else if (consentInput) {
+        clearFieldError(consentInput);
+    }
+
+    return isValid;
+}
+
+function checkCharLimits(panelId) {
+    let isValid = true;
+    const panel = document.getElementById(panelId);
+    if (!panel) return true;
+
+    const fields = panel.querySelectorAll('input[maxlength], textarea[maxlength]');
+    fields.forEach(field => {
+        const max = parseInt(field.getAttribute('maxlength'));
+        if (!isNaN(max) && field.value.length > max) {
+            showFieldError(field, `Character limit exceeded (maximum ${max} characters).`);
+            isValid = false;
+        }
+    });
+    return isValid;
+}
+
+function setupCharCounter(inputEl) {
+    if (!inputEl) return;
+    const maxLength = parseInt(inputEl.getAttribute('maxlength'));
+    if (isNaN(maxLength)) return;
+
+    let counter = inputEl.parentNode.querySelector('.char-counter');
+    if (!counter) {
+        counter = document.createElement('span');
+        counter.className = 'char-counter';
+        inputEl.parentNode.appendChild(counter);
+    }
+
+    const updateCounter = () => {
+        const len = inputEl.value.length;
+        counter.textContent = `${len}/${maxLength} chars`;
+        if (len > maxLength) {
+            counter.style.color = '#E24B4A';
+        } else {
+            counter.style.color = '';
+        }
+    };
+
+    inputEl.addEventListener('input', updateCounter);
+    updateCounter();
+}
+
+function setupLiveValidation() {
+    const inputs = [
+        'fname', 'lname', 'birthdate', 'contact', 'email', 
+        'resident-address', 'address-region', 'address-city', 'address-barangay',
+        'address-street', 'address-postal',
+        'sec-question', 'sec-answer', 'reg-password', 'reg-confirm', 'privacy-consent'
+    ];
+
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const eventType = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'date') ? 'change' : 'input';
+        el.addEventListener(eventType, () => {
+            if (id === 'fname' || id === 'lname') {
+                const val = el.value.trim();
+                if (val && validateName(val)) {
+                    clearFieldError(el);
+                }
+            } else if (id === 'birthdate') {
+                const val = el.value;
+                if (val) {
+                    const birth = new Date(val);
+                    const today = new Date();
+                    const age = today.getFullYear() - birth.getFullYear() -
+                        (today.getMonth() < birth.getMonth() ||
+                        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0);
+                    if (age >= 18 && age <= 120) {
+                        clearFieldError(el);
+                    }
+                }
+            } else if (id === 'contact') {
+                if (/^\d{11}$/.test(el.value.trim())) {
+                    clearFieldError(el);
+                }
+            } else if (id === 'email') {
+                if (el.value.trim().endsWith('@gmail.com')) {
+                    clearFieldError(el);
+                }
+            } else if (id === 'address-postal') {
+                if (el.value.trim() && validatePostalCode(el.value)) {
+                    clearFieldError(el);
+                }
+            } else if (id === 'reg-password') {
+                if (el.value.length >= 8) {
+                    clearFieldError(el);
+                }
+            } else if (id === 'reg-confirm') {
+                const pw = document.getElementById('reg-password')?.value;
+                if (el.value && el.value === pw) {
+                    clearFieldError(el);
+                }
+            } else if (id === 'privacy-consent') {
+                if (el.checked) {
+                    clearFieldError(el);
+                }
+            } else {
+                if (el.value.trim()) {
+                    clearFieldError(el);
+                }
+            }
+        });
+    });
+
+    const regionSelect = document.getElementById('address-region');
+    const citySelect = document.getElementById('address-city');
+
+    if (regionSelect) {
+        regionSelect.addEventListener('change', () => {
+            populateCities(regionSelect.value);
+            clearFieldError(regionSelect);
+        });
+    }
+
+    if (citySelect) {
+        citySelect.addEventListener('change', () => {
+            const regionVal = regionSelect?.value || '';
+            populateBarangays(regionVal, citySelect.value);
+            clearFieldError(citySelect);
+        });
+    }
+
+    const brgySelect = document.getElementById('address-barangay');
+    if (brgySelect) {
+        brgySelect.addEventListener('change', () => {
+            clearFieldError(brgySelect);
+        });
+    }
+
+    const allInputs = document.querySelectorAll('input[maxlength], textarea[maxlength]');
+    allInputs.forEach(input => {
+        setupCharCounter(input);
+    });
+}
+
+function goToStep(step) {
+    if (step === 2 && currentStep === 1) {
+        if (!validateStep1() || !checkCharLimits('panel-1')) {
+            return;
+        }
+    }
+    if (step === 3 && currentStep === 2) {
+        if (!validateStep2() || !checkCharLimits('panel-2')) {
             return;
         }
         updateSummary();
@@ -405,21 +875,63 @@ function backtoS1() {
 
 function toggleResidentAddressFields() {
     const checkbox = document.getElementById('resident');
-    const div1     = document.querySelector('.address-div1');
-    const div2     = document.querySelector('.address-div2');
-    const input1   = document.getElementById('resident-address');
-    const input2   = document.getElementById('outside-address');
-    if (!checkbox || !div1 || !div2 || !input1 || !input2) return;
+    const purokDiv = document.querySelector('.address-purok-div');
+    const purokSelect = document.getElementById('resident-address');
+    
+    const regionSelect = document.getElementById('address-region');
+    const citySelect = document.getElementById('address-city');
+    const brgySelect = document.getElementById('address-barangay');
+    const streetInput = document.getElementById('address-street');
+    const postalInput = document.getElementById('address-postal');
+
+    if (!checkbox || !regionSelect || !citySelect || !brgySelect || !streetInput || !postalInput) return;
 
     const isResident = checkbox.checked;
 
-    div1.classList.toggle('active', isResident);
-    div2.classList.toggle('active', !isResident);
-    input1.required = isResident;
-    input2.required = !isResident;
+    if (isResident) {
+        if (purokDiv) purokDiv.style.display = 'block';
+        if (purokSelect) purokSelect.required = true;
 
-    if (!isResident) input1.value = '';
-    else input2.value = '';
+        regionSelect.value = 'NCR';
+        regionSelect.disabled = true;
+        populateCities('NCR');
+        
+        citySelect.value = 'Manila';
+        citySelect.disabled = true;
+        populateBarangays('NCR', 'Manila');
+        
+        brgySelect.value = 'Barangay 628';
+        brgySelect.disabled = true;
+        
+        postalInput.value = '1016';
+        postalInput.disabled = true;
+
+        clearFieldError(regionSelect);
+        clearFieldError(citySelect);
+        clearFieldError(brgySelect);
+        clearFieldError(postalInput);
+    } else {
+        if (purokDiv) {
+            purokDiv.style.display = 'none';
+            if (purokSelect) {
+                purokSelect.required = false;
+                purokSelect.value = '';
+                clearFieldError(purokSelect);
+            }
+        }
+
+        regionSelect.disabled = false;
+        regionSelect.value = '';
+        
+        citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+        citySelect.disabled = false;
+        
+        brgySelect.innerHTML = '<option value="" disabled selected>Select Barangay</option>';
+        brgySelect.disabled = false;
+        
+        postalInput.disabled = false;
+        if (postalInput.value === '1016') postalInput.value = '';
+    }
 }
 
 function toggleCategory(headerEl) {
@@ -450,38 +962,46 @@ function updateSummary() {
 }
 
 async function completeRegistration() {
+    if (!validateStep3() || !checkCharLimits('panel-3')) {
+        return;
+    }
+
     const password = document.getElementById('reg-password')?.value;
-    const confirm  = document.getElementById('reg-confirm')?.value;
     const question = document.getElementById('sec-question')?.value;
     const answer   = document.getElementById('sec-answer')?.value.trim();
 
-    if (!question || !answer) {
-        alert('Please select a security question and provide your answer.');
-        return;
-    }
-    if (!password || password.length < 8) {
-        alert('Password must be at least 8 characters.');
-        return;
-    }
-    if (password !== confirm) {
-        alert('Passwords do not match. Please try again.');
-        return;
-    }
-
     const isResident = document.getElementById('resident')?.checked ?? false;
     let address = '';
+    
+    const street = document.getElementById('address-street')?.value.trim() || '';
+    const regionSelect = document.getElementById('address-region');
+    const region = regionSelect ? regionSelect.options[regionSelect.selectedIndex]?.text : '';
+    const citySelect = document.getElementById('address-city');
+    const city = citySelect?.value || '';
+    const brgySelect = document.getElementById('address-barangay');
+    const brgy = brgySelect?.value || '';
+    const postal = document.getElementById('address-postal')?.value.trim() || '';
+    const country = "Philippines";
+
     if (isResident) {
-        const purok   = document.getElementById('resident-address')?.value || '';
-        const houseNo = document.getElementById('house-no')?.value.trim() || '';
-        address = houseNo ? `${houseNo}, ${purok}` : purok;
+        const purok = document.getElementById('resident-address')?.value || '';
+        address = `${street}, ${purok}, ${brgy}, ${city}, ${region}, ${postal}, ${country}`;
     } else {
-        const city = document.getElementById('outside-address')?.value || '';
-        const brgy = document.getElementById('outside-address-brgy')?.value.trim() || '';
-        address = brgy ? `${brgy}, ${city}` : city;
+        address = `${street}, ${brgy}, ${city}, ${region}, ${postal}, ${country}`;
     }
 
     const skills = [...document.querySelectorAll('input[name="skill"]:checked')]
         .map(cb => cb.value);
+
+    const submitBtn = document.querySelector('button[type="submit"]');
+    let originalHtml = '';
+    if (submitBtn) {
+        if (submitBtn.classList.contains('loading')) return;
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        originalHtml = submitBtn.innerHTML;
+        submitBtn.innerHTML = `<span class="spinner"></span> Submitting...`;
+    }
 
     const payload = {
         firstName:     document.getElementById('fname')?.value.trim(),
@@ -511,19 +1031,47 @@ async function completeRegistration() {
         const data = await response.json();
 
         if (response.ok) {
+            formIsDirty = false; // Reset dirty flag
             document.querySelectorAll('.reg-step-panel').forEach(p => p.classList.remove('active'));
             const success = document.getElementById('reg-success');
             if (success) success.classList.add('active');
             window.scrollTo(0, 0);
         } else {
-            alert(data.error || 'Registration failed. Please try again.');
+            if (data.error && data.error.includes("already registered")) {
+                const goToLogin = confirm("This email is already registered with an account. Would you like to sign in instead?");
+                if (goToLogin) {
+                    formIsDirty = false; // Reset dirty flag to prevent leave confirmation prompt
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } else {
+                alert(data.error || 'Registration failed. Please try again.');
+            }
+            if (submitBtn) {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
         }
 
     } catch (err) {
         alert('Could not connect to the server. Please try again.');
         console.error(err);
+        if (submitBtn) {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+        }
     }
 }
+
+window.addEventListener('beforeunload', (e) => {
+    if (formIsDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+});
 
 // ── Password Strength Meter ──────────────────────────────────────────
 (function () {
@@ -692,15 +1240,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function restrictToLetters(el) {
         if (!el) return;
-        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' '];
+        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', ' ', '-', "'"];
         el.addEventListener('keydown', e => {
-            if (!allowed.includes(e.key) && !/^[a-zA-Z\s]$/.test(e.key)) e.preventDefault();
+            if (!allowed.includes(e.key) && !/^[a-zA-Z\s'\-]$/.test(e.key)) e.preventDefault();
         });
         el.addEventListener('paste', e => {
-            if (/[^a-zA-Z\s]/.test(e.clipboardData.getData('text'))) e.preventDefault();
+            if (/[^a-zA-Z\s'\-]/.test(e.clipboardData.getData('text'))) e.preventDefault();
         });
         el.addEventListener('drop', e => {
-            if (/[^a-zA-Z\s]/.test(e.dataTransfer.getData('text'))) e.preventDefault();
+            if (/[^a-zA-Z\s'\-]/.test(e.dataTransfer.getData('text'))) e.preventDefault();
         });
     }
 
@@ -751,6 +1299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         residentCheckbox.addEventListener('change', toggleResidentAddressFields);
     }
     toggleResidentAddressFields();
+    setupLiveValidation();
 
     const birthdateInput = document.getElementById('birthdate');
     if (birthdateInput) {
@@ -820,6 +1369,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const registrationForm = document.getElementById('registration-form');
     if (registrationForm) {
+        registrationForm.addEventListener('input', () => {
+            formIsDirty = true;
+        });
+        registrationForm.addEventListener('change', () => {
+            formIsDirty = true;
+        });
         registrationForm.addEventListener('submit', event => {
             event.preventDefault();
             if (currentStep === 3)      completeRegistration();
