@@ -27,7 +27,7 @@ function closeEditModal() {
   _activeCard = null;
 }
 
-function saveEditModal() {
+async function saveEditModal() {
   const name    = document.getElementById('edit-name').value.trim();
   const contact = document.getElementById('edit-contact').value.trim();
   const address = document.getElementById('edit-address').value.trim();
@@ -40,21 +40,20 @@ function saveEditModal() {
 
   if (_activeCard) {
     const id = _activeCard.dataset.id;
-    
-    // Split name into first_name and last_name for backend-like structure
+
     const nameParts = name.split(/\s+/);
     const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const lastName  = nameParts.slice(1).join(' ') || '';
 
     // Update in-memory array in script.js (admin page)
     if (typeof allVolunteers !== 'undefined') {
       const idx = allVolunteers.findIndex(v => String(v.id) === String(id));
       if (idx !== -1) {
-        allVolunteers[idx].first_name = firstName;
-        allVolunteers[idx].last_name = lastName;
+        allVolunteers[idx].first_name     = firstName;
+        allVolunteers[idx].last_name      = lastName;
         allVolunteers[idx].contact_number = contact;
-        allVolunteers[idx].address = address;
-        allVolunteers[idx].status = status;
+        allVolunteers[idx].address        = address;
+        allVolunteers[idx].status         = status;
       }
     }
 
@@ -62,48 +61,50 @@ function saveEditModal() {
     if (typeof volunteers !== 'undefined') {
       const idx = volunteers.findIndex(v => String(v.id) === String(id));
       if (idx !== -1) {
-        volunteers[idx].name = name;
+        volunteers[idx].name     = name;
         volunteers[idx].initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
         volunteers[idx].location = address;
-        volunteers[idx].phone = contact;
-        volunteers[idx].status = status;
+        volunteers[idx].phone    = contact;
+        volunteers[idx].status   = status;
       }
     }
 
-    // Update DOM directly
+    // Update DOM
     const nameNode = _activeCard.querySelector('.vol-name');
     if (nameNode) {
-      if (nameNode.childNodes[0]) {
-        nameNode.childNodes[0].textContent = name + ' ';
-      }
+      if (nameNode.childNodes[0]) nameNode.childNodes[0].textContent = name + ' ';
       const badge = nameNode.querySelector('.vol-badge');
       if (badge && status) {
         badge.textContent = status;
-        badge.className = 'vol-badge ' + status.toLowerCase();
-        
-        // Also update approve button text & state on card
+        badge.className   = 'vol-badge ' + status.toLowerCase();
+
         const approveBtn = _activeCard.querySelector('.v-approve');
         if (approveBtn) {
           if (status === 'active') {
             approveBtn.textContent = 'approved';
-            approveBtn.disabled = true;
+            approveBtn.disabled    = true;
           } else {
             approveBtn.textContent = '✓ Approve';
-            approveBtn.disabled = false;
+            approveBtn.disabled    = false;
           }
         }
       }
     }
 
     const meta = _activeCard.querySelector('.vol-meta');
-    if (meta) {
-      meta.textContent = address + ' · ' + contact;
-    }
+    if (meta) meta.textContent = address + ' · ' + contact;
 
     const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-    const avatar = _activeCard.querySelector('.vol-avatar') || _activeCard.querySelector('.avatar');
-    if (avatar) {
-      avatar.textContent = initials;
+    const avatar   = _activeCard.querySelector('.vol-avatar') || _activeCard.querySelector('.avatar');
+    if (avatar) avatar.textContent = initials;
+
+    // ── AUDIT LOG ───────────────────────────────────────────────
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction(
+        'EDIT_VOLUNTEER',
+        name,
+        `Status: ${status} · Contact: ${contact}`
+      );
     }
   }
 
@@ -113,10 +114,8 @@ function saveEditModal() {
 
 function openRemoveModal(btn) {
   _activeCard = btn.closest('.vol-card');
-
   const rawName = _activeCard.querySelector('.vol-name').childNodes[0].textContent.trim();
   document.getElementById('remove-vol-name').textContent = rawName;
-
   document.getElementById('remove-modal').classList.remove('hidden');
 }
 
@@ -125,8 +124,17 @@ function closeRemoveModal() {
   _activeCard = null;
 }
 
-function confirmRemoveModal() {
-  if (_activeCard) _activeCard.remove();
+async function confirmRemoveModal() {
+  if (_activeCard) {
+    const rawName = _activeCard.querySelector('.vol-name')?.childNodes[0]?.textContent?.trim() || 'Volunteer';
+
+    // ── AUDIT LOG ───────────────────────────────────────────────
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction('REMOVE_VOLUNTEER', rawName, 'Removed via modal');
+    }
+
+    _activeCard.remove();
+  }
   closeRemoveModal();
 }
 
@@ -154,7 +162,7 @@ function closeAdminEditModal() {
   _activeAdminCard = null;
 }
 
-function saveAdminEditModal() {
+async function saveAdminEditModal() {
   const name     = document.getElementById('admin-edit-name').value.trim();
   const email    = document.getElementById('admin-edit-email').value.trim();
   const password = document.getElementById('admin-edit-password').value.trim();
@@ -164,9 +172,19 @@ function saveAdminEditModal() {
     return;
   }
 
+  const oldName = _activeAdminCard?.querySelector('.admin-name')?.textContent?.trim() || name;
+
   if (_activeAdminCard) {
     _activeAdminCard.querySelector('.admin-name').textContent  = name;
     _activeAdminCard.querySelector('.admin-email').textContent = email;
+  }
+
+  // ── AUDIT LOG ─────────────────────────────────────────────────
+  if (typeof logAuditAction === 'function') {
+    const detail = password
+      ? `Email: ${email} · Password changed`
+      : `Email: ${email}`;
+    await logAuditAction('EDIT_ADMIN', oldName, detail);
   }
 
   closeAdminEditModal();
@@ -174,10 +192,8 @@ function saveAdminEditModal() {
 
 function openAdminDeleteModal(btn) {
   _activeAdminCard = btn.closest('.admin-card');
-
   const name = _activeAdminCard.querySelector('.admin-name').textContent.trim();
   document.getElementById('admin-delete-name').textContent = name;
-
   document.getElementById('admin-delete-modal').classList.remove('hidden');
 }
 
@@ -186,8 +202,18 @@ function closeAdminDeleteModal() {
   _activeAdminCard = null;
 }
 
-function confirmAdminDeleteModal() {
-  if (_activeAdminCard) _activeAdminCard.remove();
+async function confirmAdminDeleteModal() {
+  if (_activeAdminCard) {
+    const name  = _activeAdminCard.querySelector('.admin-name')?.textContent?.trim()  || 'Admin';
+    const email = _activeAdminCard.querySelector('.admin-email')?.textContent?.trim() || '';
+
+    // ── AUDIT LOG ─────────────────────────────────────────────────
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction('DELETE_ADMIN', name, `Email: ${email}`);
+    }
+
+    _activeAdminCard.remove();
+  }
   closeAdminDeleteModal();
 }
 
@@ -226,14 +252,11 @@ function closePostEditModal() {
   currentEditCard = null;
 }
 
-// ── Edit date: no future dates ──────────────────────────────────
+// ── Edit date: no future dates ────────────────────────────────────────
 const editDateInput = document.getElementById('edit-date');
 if (editDateInput) {
   const today = new Date();
-  const yyyy  = today.getFullYear();
-  const mm    = String(today.getMonth() + 1).padStart(2, '0');
-  const dd    = String(today.getDate()).padStart(2, '0');
-  editDateInput.max = `${yyyy}-${mm}-${dd}`;
+  editDateInput.max = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 }
 
 function openPostDeleteModal(card) {
@@ -253,7 +276,7 @@ function closePostDeleteModal() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ── Volunteer modals ────────────────────────────────────────────
+  // ── Volunteer modals ──────────────────────────────────────────────
   document.getElementById('edit-modal')?.addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
   });
@@ -267,14 +290,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === this) closeAdminDeleteModal();
   });
 
-  // ── Feed post edit modal ────────────────────────────────────────
+  // ── Feed post edit modal ──────────────────────────────────────────
   document.getElementById('closeEditModal')?.addEventListener('click', closePostEditModal);
   document.getElementById('cancelEditPost')?.addEventListener('click', closePostEditModal);
   document.getElementById('editPostModal')?.addEventListener('click', function(e) {
     if (e.target === this) closePostEditModal();
   });
 
-  document.getElementById('saveEditPost')?.addEventListener('click', () => {
+  document.getElementById('saveEditPost')?.addEventListener('click', async () => {
     if (!currentEditCard) return;
 
     const newTitle = document.getElementById('edit-title').value.trim();
@@ -299,19 +322,38 @@ document.addEventListener('DOMContentLoaded', () => {
     currentEditCard.querySelector('.recent-op-desc').textContent            = newCap;
     currentEditCard.querySelector('.badge-vol').lastChild.textContent       = ` ${newVol} volunteer${newVol != 1 ? 's' : ''}`;
     currentEditCard.querySelector('.badge-helped').lastChild.textContent    = ` ${newFam} helped`;
-    if (newImg) currentEditCard.querySelector('.recent-op-img-placeholder img').src = newImg;
+    if (newImg) {
+      const imgEl = currentEditCard.querySelector('.recent-op-img-placeholder img');
+      if (imgEl) imgEl.src = newImg;
+    }
+
+    // ── AUDIT LOG ───────────────────────────────────────────────
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction(
+        'EDIT_POST',
+        newTitle,
+        `Location: ${newLoc} · ${newVol} volunteers · ${newFam} families helped`
+      );
+    }
 
     closePostEditModal();
   });
 
-  // ── Feed post delete modal ──────────────────────────────────────
+  // ── Feed post delete modal ────────────────────────────────────────
   document.getElementById('cancelDeletePost')?.addEventListener('click', closePostDeleteModal);
   document.getElementById('deletePostModal')?.addEventListener('click', function(e) {
     if (e.target === this) closePostDeleteModal();
   });
 
-  document.getElementById('confirmDeletePost')?.addEventListener('click', () => {
+  document.getElementById('confirmDeletePost')?.addEventListener('click', async () => {
     if (!currentDeleteCard) return;
+
+    const title = currentDeleteCard.querySelector('.recent-op-name')?.textContent?.trim() || 'Feed Post';
+
+    // ── AUDIT LOG ───────────────────────────────────────────────
+    if (typeof logAuditAction === 'function') {
+      await logAuditAction('DELETE_POST', title, 'Removed from feed');
+    }
 
     currentDeleteCard.remove();
     closePostDeleteModal();
@@ -327,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Escape key closes all modals ───────────────────────────────
+  // ── Escape key closes all modals ──────────────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeEditModal();
