@@ -131,11 +131,15 @@ if (activeOpsContainer) {
     activeOpsContainer.innerHTML = opsHTML;
 }
 
-// ---------- Volunteer Filters (now backed by real API data) ----------
-let volunteers = [];
-let admins = [];
-let activeFilter = "All Skills";
-let searchTerm = "";
+// ---------- Superadmin Volunteer Directory (backed by real API data) ----------
+// NOTE: all names below are prefixed "sa" (superadmin) to avoid colliding with
+// script.js, which already defines its own global `renderVolunteers`,
+// `allVolunteers`, `filterVolunteers`, etc. for the regular admin page.
+
+let saVolunteers = [];
+let saAdmins = [];
+let saActiveSkillFilter = "All Skills";
+let saSearchTerm = "";
 
 async function loadVolunteersForSuperadmin() {
   try {
@@ -143,7 +147,7 @@ async function loadVolunteersForSuperadmin() {
     const data = await res.json();
 
     // Adapt backend shape (first_name/last_name/skills array) to what this page's render expects
-    volunteers = data.map(v => ({
+    saVolunteers = data.map(v => ({
       name: `${v.first_name} ${v.last_name}`,
       initials: ((v.first_name?.[0] || '') + (v.last_name?.[0] || '')).toUpperCase(),
       status: v.status,
@@ -153,42 +157,42 @@ async function loadVolunteersForSuperadmin() {
       ops: v.ops || 0
     }));
 
-    renderFilters();
-    renderVolunteers();
+    renderSaFilters();
+    renderSaVolunteers();
   } catch (err) {
     console.error('Failed to load volunteers for superadmin:', err);
   }
 }
 
-function renderFilters() {
-  const uniqueSkills = ["All Skills", ...new Set(volunteers.flatMap(v => v.skills))];
+function renderSaFilters() {
+  const uniqueSkills = ["All Skills", ...new Set(saVolunteers.flatMap(v => v.skills))];
   const filterContainer = document.getElementById("skill-filters");
   if (!filterContainer) return;
 
   filterContainer.innerHTML = uniqueSkills.map(skill => `
-    <button class="filter-pill ${skill === activeFilter ? "active" : ""}" data-skill="${skill}">
+    <button class="filter-pill ${skill === saActiveSkillFilter ? "active" : ""}" data-skill="${skill}">
       ${skill}
     </button>
   `).join("");
 
   document.querySelectorAll(".filter-pill").forEach(btn => {
     btn.addEventListener("click", () => {
-      activeFilter = btn.dataset.skill;
-      renderFilters();
-      renderVolunteers();
+      saActiveSkillFilter = btn.dataset.skill;
+      renderSaFilters();
+      renderSaVolunteers();
     });
   });
 }
 
-function renderVolunteers() {
+function renderSaVolunteers() {
   const resultsCount = document.getElementById("results-count");
   const volunteerList = document.getElementById("vol-list");
   if (!resultsCount || !volunteerList) return;
 
-  const term = searchTerm.toLowerCase();
+  const term = saSearchTerm.toLowerCase();
 
-  const filtered = volunteers.filter(v => {
-    const matchesSkill = activeFilter === "All Skills" || v.skills.includes(activeFilter);
+  const filtered = saVolunteers.filter(v => {
+    const matchesSkill = saActiveSkillFilter === "All Skills" || v.skills.includes(saActiveSkillFilter);
     const matchesSearch = v.name.toLowerCase().includes(term) ||
       v.skills.some(s => s.toLowerCase().includes(term));
     return matchesSkill && matchesSearch;
@@ -222,11 +226,11 @@ function renderVolunteers() {
   `).join("");
 }
 
-const searchInput = document.getElementById("vol-search");
-if (searchInput) {
-  searchInput.addEventListener("input", e => {
-    searchTerm = e.target.value;
-    renderVolunteers();
+const saVolSearchInput = document.getElementById("vol-search");
+if (saVolSearchInput) {
+  saVolSearchInput.addEventListener("input", e => {
+    saSearchTerm = e.target.value;
+    renderSaVolunteers();
   });
 }
 
@@ -235,12 +239,12 @@ document.addEventListener('DOMContentLoaded', loadVolunteersForSuperadmin);
 
 // ---------- Admin List ----------
 
-function renderAdmins() {
+function renderSaAdmins() {
     const adminContainer = document.getElementById("adminContainer");
     const adminCount = document.getElementById("admin-count");
 
     if (adminContainer) {
-        adminContainer.innerHTML = admins.map(a => `
+        adminContainer.innerHTML = saAdmins.map(a => `
             <div class="card admin-card">
               <div class="admin-top">
                 <div class="ad-logo">
@@ -281,12 +285,12 @@ function renderAdmins() {
     }
 
     if (adminCount) {
-        adminCount.textContent = `${admins.length} administrator account${admins.length === 1 ? "" : "s"}`;
+        adminCount.textContent = `${saAdmins.length} administrator account${saAdmins.length === 1 ? "" : "s"}`;
     }
 }
 
 // Render admins once on load (currently an empty array until a real /admins endpoint exists)
-renderAdmins();
+renderSaAdmins();
 
 /* ==========================================
    SUPERADMIN COMMUNITY EDIT
