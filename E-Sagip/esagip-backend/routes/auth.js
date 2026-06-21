@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const bcrypt = require('bcryptjs');
+const {
+    findPersonalInfoMatch,
+    isPasswordReused,
+    recordPasswordHistory,
+    isPasswordExpired
+} = require('../utils/passwordRules');
 
 // 1. VOLUNTEER REGISTRATION ENDPOINT
 router.post('/register', async (req, res) => {
@@ -15,6 +21,12 @@ router.post('/register', async (req, res) => {
         const [existing] = await db.query('SELECT id FROM volunteers WHERE email = ?', [email]);
         if (existing.length > 0) {
             return res.status(400).json({ error: "Email is already registered with an account." });
+        }
+
+        // Rule: password cannot contain email or full name
+        const personalInfoMatch = findPersonalInfoMatch(password, { email, firstName, lastName });
+        if (personalInfoMatch) {
+            return res.status(400).json({ error: "Password cannot contain your name or email address." });
         }
 
         const hashedPw = await bcrypt.hash(password, 10);
@@ -61,7 +73,13 @@ router.post('/login', async (req, res) => {
             const valid = await bcrypt.compare(password, admin[0].password_hash);
             if (!valid) return res.status(401).json({ error: "Incorrect password." });
 
-            return res.json({ success: true, user: { id: admin[0].id, name: admin[0].name, role: admin[0].role } });
+            const passwordExpired = isPasswordExpired(admin[0].password_changed_at);
+
+            return res.json({
+                success: true,
+                user: { id: admin[0].id, name: admin[0].name, role: admin[0].role },
+                passwordExpired
+            });
         } else {
             const [volunteer] = await db.query('SELECT * FROM volunteers WHERE email = ?', [email]);
             if (volunteer.length === 0) return res.status(401).json({ error: "Invalid credentials." });
@@ -69,15 +87,18 @@ router.post('/login', async (req, res) => {
             const valid = await bcrypt.compare(password, volunteer[0].password_hash);
             if (!valid) return res.status(401).json({ error: "Incorrect password." });
 
+            const passwordExpired = isPasswordExpired(volunteer[0].password_changed_at);
+
             return res.json({ 
-    success: true, 
-    user: { 
-        id: volunteer[0].id, 
-        name: `${volunteer[0].first_name} ${volunteer[0].last_name}`, 
-        role: 'volunteer',
-        status: volunteer[0].status   // ← add this
-    } 
-});
+                success: true, 
+                user: { 
+                    id: volunteer[0].id, 
+                    name: `${volunteer[0].first_name} ${volunteer[0].last_name}`, 
+                    role: 'volunteer',
+                    status: volunteer[0].status
+                },
+                passwordExpired
+            });
         }
     } catch (err) {
         console.error(err);
@@ -85,7 +106,66 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 3. FETCH ALL VOLUNTEERS WITH THEIR RESPECTIVE SKILLS (for Admin Dashboard)
+// 3. CHANGE PASSWORD ENDPOINT (Volunteers and Admins)
+router.put('/change-password', async (req, res) => {
+    const { userType, userId, currentPassword, newPassword } = req.body;
+
+    if (!['admin', 'volunteer'].includes(userType)) {
+        return res.status(400).json({ error: "Invalid user type." });
+    }
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current and new password are required." });
+    }
+    if (newPassword.length < 8) {
+        return res.status(400).json({ error: "New password must be at least 8 characters." });
+    }
+
+    try {
+        const table = userType === 'admin' ? 'admins' : 'volunteers';
+        const [rows] = await db.query(`SELECT * FROM ${table} WHERE id = ?`, [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const user = rows[0];
+
+        const validCurrent = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!validCurrent) {
+            return res.status(401).json({ error: "Current password is incorrect." });
+        }
+
+        // Rule: cannot contain email or full name
+        const personalInfoFields = userType === 'admin'
+            ? { email: user.email, fullName: user.name }
+            : { email: user.email, firstName: user.first_name, lastName: user.last_name };
+
+        const personalInfoMatch = findPersonalInfoMatch(newPassword, personalInfoFields);
+        if (personalInfoMatch) {
+            return res.status(400).json({ error: "Password cannot contain your name or email address." });
+        }
+
+        // Rule: block reuse of last 5 passwords
+        const reused = await isPasswordReused(newPassword, userType, userId, user.password_hash);
+        if (reused) {
+            return res.status(400).json({ error: "You cannot reuse any of your last 5 passwords." });
+        }
+
+        const newHash = await bcrypt.hash(newPassword, 10);
+
+        await db.query(
+            `UPDATE ${table} SET password_hash = ?, password_changed_at = NOW() WHERE id = ?`,
+            [newHash, userId]
+        );
+
+        await recordPasswordHistory(userType, userId, user.password_hash);
+
+        res.json({ success: true, message: "Password updated successfully." });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error updating password." });
+    }
+});
+
+// 4. FETCH ALL VOLUNTEERS WITH THEIR RESPECTIVE SKILLS (for Admin Dashboard)
 router.get('/volunteers', async (req, res) => {
     try {
         const [volunteers] = await db.query(`
@@ -104,7 +184,6 @@ router.get('/volunteers', async (req, res) => {
             GROUP BY v.id
         `);
 
-        // Format the grouped text string back into a clean array for your frontend mapping rules
         const formattedVolunteers = volunteers.map(v => ({
             ...v,
             skills: v.skills_list ? v.skills_list.split(',') : []
@@ -117,7 +196,7 @@ router.get('/volunteers', async (req, res) => {
     }
 });
 
-// 4. APPROVE A VOLUNTEER
+// 5. APPROVE A VOLUNTEER
 router.put('/volunteers/:id/approve', async (req, res) => {
     try {
         await db.query('UPDATE volunteers SET status = ? WHERE id = ?', ['active', req.params.id]);
@@ -128,7 +207,7 @@ router.put('/volunteers/:id/approve', async (req, res) => {
     }
 });
 
-// 5. REMOVE A VOLUNTEER
+// 6. REMOVE A VOLUNTEER
 router.delete('/volunteers/:id', async (req, res) => {
     try {
         await db.query('DELETE FROM volunteers WHERE id = ?', [req.params.id]);
