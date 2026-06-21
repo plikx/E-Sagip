@@ -101,7 +101,7 @@
       </svg>
       Feed
     </button>
-  </nav>
+
   <!-- Audit Log button -->
   <!-- ============================================================
      AUDIT LOG TAB  —  add this subnav button after the Feed button
@@ -118,64 +118,9 @@
   </svg>
   Audit Log
 </button>
+  </nav>
 
 
-<!-- ============================================================
-     2.  TAB CONTENT  (paste before the closing </body> tag,
-         after the delete-post modal)
-     ============================================================ -->
-<div id="tab-auditlog" class="dashboard-content hidden">
-
-  <div class="section-title">Audit Log</div>
-
-  <!-- Toolbar -->
-  <div class="audit-toolbar">
-
-    <!-- Search -->
-    <div class="audit-search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" id="audit-search" placeholder="Search by admin, action, or target…" oninput="filterAuditLogs()" />
-    </div>
-
-    <!-- Action-type filter -->
-    <div class="audit-filter-row" id="audit-filter-row">
-      <button class="vfilter-btn active" data-action="all"      onclick="setAuditFilter(this,'all')">All</button>
-      <button class="vfilter-btn" data-action="DEPLOY_OPERATION" onclick="setAuditFilter(this,'DEPLOY_OPERATION')">Deploy Op</button>
-      <button class="vfilter-btn" data-action="COMPLETE_OPERATION" onclick="setAuditFilter(this,'COMPLETE_OPERATION')">Complete Op</button>
-      <button class="vfilter-btn" data-action="APPROVE_VOLUNTEER"  onclick="setAuditFilter(this,'APPROVE_VOLUNTEER')">Approve Vol.</button>
-      <button class="vfilter-btn" data-action="REMOVE_VOLUNTEER"   onclick="setAuditFilter(this,'REMOVE_VOLUNTEER')">Remove Vol.</button>
-      <button class="vfilter-btn" data-action="EDIT_VOLUNTEER"     onclick="setAuditFilter(this,'EDIT_VOLUNTEER')">Edit Vol.</button>
-      <button class="vfilter-btn" data-action="ADD_ADMIN"          onclick="setAuditFilter(this,'ADD_ADMIN')">Add Admin</button>
-      <button class="vfilter-btn" data-action="EDIT_ADMIN"         onclick="setAuditFilter(this,'EDIT_ADMIN')">Edit Admin</button>
-      <button class="vfilter-btn" data-action="DELETE_ADMIN"       onclick="setAuditFilter(this,'DELETE_ADMIN')">Delete Admin</button>
-      <button class="vfilter-btn" data-action="PUBLISH_POST"       onclick="setAuditFilter(this,'PUBLISH_POST')">Post</button>
-      <button class="vfilter-btn" data-action="EDIT_POST"          onclick="setAuditFilter(this,'EDIT_POST')">Edit Post</button>
-      <button class="vfilter-btn" data-action="DELETE_POST"        onclick="setAuditFilter(this,'DELETE_POST')">Delete Post</button>
-    </div>
-
-    <!-- Count + Clear -->
-    <div class="audit-meta-row">
-      <p class="vol-count" id="audit-count">0 entries</p>
-      <button class="audit-clear-btn" onclick="clearAuditLogs()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-        </svg>
-        Clear All Logs
-      </button>
-    </div>
-  </div>
-
-  <!-- Log list -->
-  <div class="audit-list" id="audit-list">
-    <div class="empty-state">
-      <div class="empty-icon">📋</div>
-      <h3>No Activity Yet</h3>
-      <p>Admin actions will be recorded here automatically.</p>
-    </div>
-  </div>
 
 
   <!-- Dashboard Tab -->
@@ -895,7 +840,62 @@
     </div>
   </div>
 </div>
+<!-- ============================================================
+     2.  TAB CONTENT  (paste before the closing </body> tag,
+         after the delete-post modal)
+     ============================================================ -->
+<div id="tab-auditlog" class="dashboard-content hidden">
 
+  <div class="section-title">Audit Log</div>
+
+  <!-- Toolbar -->
+  <div class="audit-toolbar">
+
+    <!-- Search -->
+    <div class="audit-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="audit-search" placeholder="Search by admin, action, or target…" oninput="filterAuditLogs()" />
+    </div>
+
+    <!-- Action-type filter -->
+    <div class="audit-filter-row" id="audit-filter-row">
+      <button class="vfilter-btn active" data-action="all"      onclick="setAuditFilter(this,'all')">All</button>
+      <button class="vfilter-btn" data-action="DEPLOY_OPERATION" onclick="setAuditFilter(this,'DEPLOY_OPERATION')">Deploy Op</button>
+      <button class="vfilter-btn" data-action="COMPLETE_OPERATION" onclick="setAuditFilter(this,'COMPLETE_OPERATION')">Complete Op</button>
+      <button class="vfilter-btn" data-action="APPROVE_VOLUNTEER"  onclick="setAuditFilter(this,'APPROVE_VOLUNTEER')">Approve Vol.</button>
+      <button class="vfilter-btn" data-action="REMOVE_VOLUNTEER"   onclick="setAuditFilter(this,'REMOVE_VOLUNTEER')">Remove Vol.</button>
+      <button class="vfilter-btn" data-action="EDIT_VOLUNTEER"     onclick="setAuditFilter(this,'EDIT_VOLUNTEER')">Edit Vol.</button>
+      <button class="vfilter-btn" data-action="ADD_ADMIN"          onclick="setAuditFilter(this,'ADD_ADMIN')">Add Admin</button>
+      <button class="vfilter-btn" data-action="EDIT_ADMIN"         onclick="setAuditFilter(this,'EDIT_ADMIN')">Edit Admin</button>
+      <button class="vfilter-btn" data-action="DELETE_ADMIN"       onclick="setAuditFilter(this,'DELETE_ADMIN')">Delete Admin</button>
+      <button class="vfilter-btn" data-action="PUBLISH_POST"       onclick="setAuditFilter(this,'PUBLISH_POST')">Post</button>
+      <button class="vfilter-btn" data-action="EDIT_POST"          onclick="setAuditFilter(this,'EDIT_POST')">Edit Post</button>
+      <button class="vfilter-btn" data-action="DELETE_POST"        onclick="setAuditFilter(this,'DELETE_POST')">Delete Post</button>
+    </div>
+
+    <!-- Count + Clear -->
+    <div class="audit-meta-row">
+      <p class="vol-count" id="audit-count">0 entries</p>
+      <button class="audit-clear-btn" onclick="clearAuditLogs()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        Clear All Logs
+      </button>
+    </div>
+  </div>
+
+  <!-- Log list -->
+  <div class="audit-list" id="audit-list">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No Activity Yet</h3>
+      <p>Admin actions will be recorded here automatically.</p>
+    </div>
+  </div>
   <script src="superadmin.js"></script>
   <script src="edit_delete.js"></script>
   <script src="print.js"></script>
