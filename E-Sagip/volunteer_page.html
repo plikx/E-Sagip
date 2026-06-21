@@ -28,15 +28,15 @@
 
   <!-- Sub Nav -->
   <nav class="subnav">
-    <button class="subnav-btn" onclick="switchVolunteerTab(this, 'operations')">Operations</button>
+    <button class="subnav-btn active" onclick="switchVolunteerTab(this, 'operations')">Operations</button>
     <button class="subnav-btn" onclick="switchVolunteerTab(this, 'mytasks')">My Tasks</button>
     <button class="subnav-btn" onclick="switchVolunteerTab(this, 'history')">History</button>
-    <button class="subnav-btn active" onclick="switchVolunteerTab(this, 'feed')">Feed</button>
+    <button class="subnav-btn" onclick="switchVolunteerTab(this, 'feed')">Feed</button>
   </nav>
 
   <div class="dashboard-content portal-container">
 
-<div id="vtab-operations" class="tab-panel hidden">
+<div id="vtab-operations" class="tab-panel">
 
     <!-- Search -->
     <div class="ops-search">
@@ -201,7 +201,7 @@
 </div>
 
    <!-- Volunteer Feed -->
-<div id="vtab-feed" class="tab-panel">
+<div id="vtab-feed" class="tab-panel hidden">
     
       
       <!-- Alert Marquee -->
@@ -432,5 +432,6 @@ will appear here.
 
   <script src="js/script.js"></script>
   <script src="js/script2.js"></script>
+  <script src="js/vol_operations.js"></script>
 </body>
 </html>
