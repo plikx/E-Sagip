@@ -208,6 +208,7 @@ router.get('/volunteers', async (req, res) => {
                 v.contact_number, 
                 v.email, 
                 v.status,
+                v.is_online,
                 GROUP_CONCAT(s.name) AS skills_list
             FROM volunteers v
             LEFT JOIN volunteer_skills vs ON v.id = vs.volunteer_id
