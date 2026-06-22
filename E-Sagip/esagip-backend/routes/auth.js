@@ -8,6 +8,7 @@ const {
     recordPasswordHistory,
     isPasswordExpired
 } = require('../utils/passwordRules');
+const { isValidTransition, verifyAdmin } = require('../utils/adminActions');
 const { logAction } = require('./audit');
 
 // 1. VOLUNTEER REGISTRATION ENDPOINT
@@ -24,7 +25,6 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: "Email is already registered with an account." });
         }
 
-        // Rule: password cannot contain email or full name
         const personalInfoMatch = findPersonalInfoMatch(password, { email, firstName, lastName });
         if (personalInfoMatch) {
             return res.status(400).json({ error: "Password cannot contain your name or email address." });
@@ -134,7 +134,6 @@ router.put('/change-password', async (req, res) => {
             return res.status(401).json({ error: "Current password is incorrect." });
         }
 
-        // Rule: cannot contain email or full name
         const personalInfoFields = userType === 'admin'
             ? { email: user.email, fullName: user.name }
             : { email: user.email, firstName: user.first_name, lastName: user.last_name };
@@ -144,7 +143,6 @@ router.put('/change-password', async (req, res) => {
             return res.status(400).json({ error: "Password cannot contain your name or email address." });
         }
 
-        // Rule: block reuse of last 5 passwords
         const reused = await isPasswordReused(newPassword, userType, userId, user.password_hash);
         if (reused) {
             return res.status(400).json({ error: "You cannot reuse any of your last 5 passwords." });
@@ -197,21 +195,38 @@ router.get('/volunteers', async (req, res) => {
     }
 });
 
-// 5. APPROVE A VOLUNTEER (now logs to audit trail)
+// 5. APPROVE A VOLUNTEER  (pending -> active, guarded + logged)
 router.put('/volunteers/:id/approve', async (req, res) => {
-    const { adminId, adminName } = req.body;
+    const { adminId } = req.body;
+    const volunteerId = req.params.id;
 
     try {
-        const [volRows] = await db.query('SELECT first_name, last_name FROM volunteers WHERE id = ?', [req.params.id]);
-        const volunteerName = volRows[0] ? `${volRows[0].first_name} ${volRows[0].last_name}` : `Volunteer #${req.params.id}`;
+        const admin = await verifyAdmin(adminId);
+        if (!admin) {
+            return res.status(403).json({ error: "Invalid or unrecognized admin account." });
+        }
 
-        await db.query('UPDATE volunteers SET status = ? WHERE id = ?', ['active', req.params.id]);
+        const [volRows] = await db.query('SELECT first_name, last_name, status FROM volunteers WHERE id = ?', [volunteerId]);
+        if (volRows.length === 0) {
+            return res.status(404).json({ error: "Volunteer not found." });
+        }
+        const currentStatus = volRows[0].status;
+        const volunteerName = `${volRows[0].first_name} ${volRows[0].last_name}`;
+
+        if (!isValidTransition(currentStatus, 'active')) {
+            return res.status(409).json({
+                error: `Cannot approve a volunteer with status "${currentStatus}".`
+            });
+        }
+
+        await db.query('UPDATE volunteers SET status = ? WHERE id = ?', ['active', volunteerId]);
 
         await logAction({
-            adminId: adminId || null,
-            adminName: adminName || 'Admin',
+            adminId: admin.id,
+            adminName: admin.name,
             action: 'APPROVE_VOLUNTEER',
-            target: volunteerName
+            target: volunteerName,
+            details: `${currentStatus} -> active`
         });
 
         res.json({ success: true });
@@ -221,7 +236,48 @@ router.put('/volunteers/:id/approve', async (req, res) => {
     }
 });
 
-// 6. REMOVE A VOLUNTEER (now logs to audit trail)
+// 6. REJECT A VOLUNTEER  (pending -> rejected, guarded + logged)
+router.put('/volunteers/:id/reject', async (req, res) => {
+    const { adminId } = req.body;
+    const volunteerId = req.params.id;
+
+    try {
+        const admin = await verifyAdmin(adminId);
+        if (!admin) {
+            return res.status(403).json({ error: "Invalid or unrecognized admin account." });
+        }
+
+        const [volRows] = await db.query('SELECT first_name, last_name, status FROM volunteers WHERE id = ?', [volunteerId]);
+        if (volRows.length === 0) {
+            return res.status(404).json({ error: "Volunteer not found." });
+        }
+        const currentStatus = volRows[0].status;
+        const volunteerName = `${volRows[0].first_name} ${volRows[0].last_name}`;
+
+        if (!isValidTransition(currentStatus, 'rejected')) {
+            return res.status(409).json({
+                error: `Cannot reject a volunteer with status "${currentStatus}".`
+            });
+        }
+
+        await db.query('UPDATE volunteers SET status = ? WHERE id = ?', ['rejected', volunteerId]);
+
+        await logAction({
+            adminId: admin.id,
+            adminName: admin.name,
+            action: 'REJECT_VOLUNTEER',
+            target: volunteerName,
+            details: `${currentStatus} -> rejected`
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not reject volunteer." });
+    }
+});
+
+// 7. REMOVE A VOLUNTEER  (hard delete — unchanged, see note below)
 router.delete('/volunteers/:id', async (req, res) => {
     const { adminId, adminName } = req.query;
 
@@ -245,7 +301,7 @@ router.delete('/volunteers/:id', async (req, res) => {
     }
 });
 
-// 7. FIND ACCOUNT BY EMAIL (Step 1 of password recovery)
+// 8. FIND ACCOUNT BY EMAIL (Step 1 of password recovery)
 router.post('/recovery/find', async (req, res) => {
     const { email } = req.body;
     try {
@@ -260,7 +316,7 @@ router.post('/recovery/find', async (req, res) => {
     }
 });
 
-// 8. VERIFY SECURITY ANSWER (Step 2 of password recovery)
+// 9. VERIFY SECURITY ANSWER (Step 2 of password recovery)
 router.post('/recovery/verify', async (req, res) => {
     const { email, answer } = req.body;
     try {
@@ -285,7 +341,7 @@ router.post('/recovery/verify', async (req, res) => {
     }
 });
 
-// 9. RESET PASSWORD (Step 3 of password recovery)
+// 10. RESET PASSWORD (Step 3 of password recovery)
 router.post('/recovery/reset', async (req, res) => {
     const { email, answer, newPassword } = req.body;
 
@@ -336,6 +392,7 @@ router.post('/recovery/reset', async (req, res) => {
         res.status(500).json({ error: "Server error during password reset." });
     }
 });
+
 router.get('/admins', async (req, res) => {
     try {
         const [admins] = await db.query(
@@ -347,4 +404,5 @@ router.get('/admins', async (req, res) => {
         res.status(500).json({ error: 'Could not fetch admins.' });
     }
 });
+
 module.exports = router;
