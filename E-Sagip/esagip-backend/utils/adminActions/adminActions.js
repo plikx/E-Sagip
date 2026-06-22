@@ -14,21 +14,13 @@ function isValidTransition(currentStatus, newStatus) {
     return allowed.includes(newStatus);
 }
 
-// Re-checks the admin_id against the admins table — protects against a
-// spoofed/stale id being sent from the frontend, since there's no session
-// token to verify identity against.
+// Re-checks adminId against the admins table and returns the REAL name on file —
+// this is what gets written to the audit log, not whatever name the frontend sends,
+// since adminName in a request body can't be trusted on its own.
 async function verifyAdmin(adminId) {
     if (!adminId) return null;
     const [rows] = await db.query('SELECT id, name, role FROM admins WHERE id = ?', [adminId]);
     return rows[0] || null;
 }
 
-async function logAdminAction({ adminId, action, targetType, targetId, previousStatus = null, newStatus = null }) {
-    await db.query(
-        `INSERT INTO admin_activity_logs (admin_id, action, target_type, target_id, previous_status, new_status)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [adminId, action, targetType, targetId, previousStatus, newStatus]
-    );
-}
-
-module.exports = { ALLOWED_TRANSITIONS, isValidTransition, verifyAdmin, logAdminAction };
+module.exports = { ALLOWED_TRANSITIONS, isValidTransition, verifyAdmin };
