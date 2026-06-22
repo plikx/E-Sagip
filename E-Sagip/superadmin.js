@@ -626,3 +626,10 @@ if(addContactBtn){
     });
 
 }
+async function loadAdmins() {
+    try {
+        const res  = await fetch(`${API_BASE_URL}/auth/admins`); // ← /auth/admins not /admins
+        const data = await res.json();
+        // ...
+    }
+}
