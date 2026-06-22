@@ -9,15 +9,44 @@ const {
     isPasswordExpired
 } = require('../utils/passwordRules');
 const { isValidTransition, verifyAdmin } = require('../utils/adminActions');
+const {
+    normalizeEmail,
+    isValidName,
+    isValidEmailFormat,
+    isValidPhone,
+    isValidPassword,
+    isWithinLength,
+    LIMITS
+} = require('../utils/validators');
 const { logAction } = require('./audit');
 
 // 1. VOLUNTEER REGISTRATION ENDPOINT
 router.post('/register', async (req, res) => {
-    const { 
+    let { 
         firstName, lastName, birthdate, gender, isResident, 
         address, contactNumber, email, ecName, ecNumber,
         secQuestion, secAnswer, password, skills, otherSkill 
     } = req.body;
+
+    email = normalizeEmail(email);
+
+    // ---- Server-side whitelist + threshold validation ----
+    const errors = [];
+
+    if (!isValidName(firstName)) errors.push("First name must be 2-60 letters (hyphens/apostrophes allowed).");
+    if (!isValidName(lastName)) errors.push("Last name must be 2-60 letters (hyphens/apostrophes allowed).");
+    if (!isValidEmailFormat(email)) errors.push("Email must be a valid @gmail.com address.");
+    if (!isValidPhone(contactNumber)) errors.push("Contact number must be exactly 11 digits.");
+    if (!isWithinLength(address, LIMITS.address)) errors.push(`Address must be ${LIMITS.address.min}-${LIMITS.address.max} characters.`);
+    if (!isValidPassword(password)) errors.push(`Password must be ${LIMITS.password.min}-${LIMITS.password.max} characters.`);
+    if (!isWithinLength(secQuestion, LIMITS.securityQuestion)) errors.push("Please select a valid security question.");
+    if (!isWithinLength(secAnswer, LIMITS.securityAnswer)) errors.push("Security answer is required.");
+    if (ecNumber && !isValidPhone(ecNumber)) errors.push("Emergency contact number must be exactly 11 digits.");
+    if (ecName && !isValidName(ecName)) errors.push("Emergency contact name must be 2-60 letters.");
+
+    if (errors.length > 0) {
+        return res.status(400).json({ error: errors[0], errors });
+    }
 
     try {
         const [existing] = await db.query('SELECT id FROM volunteers WHERE email = ?', [email]);
@@ -64,7 +93,8 @@ router.post('/register', async (req, res) => {
 
 // 2. SIGN IN ENDPOINT (Works for both Volunteers and Admins)
 router.post('/login', async (req, res) => {
-    const { email, password, role } = req.body;
+    const { password, role } = req.body;
+    const email = normalizeEmail(req.body.email);
 
     try {
         if (role === 'admin') {
@@ -117,8 +147,8 @@ router.put('/change-password', async (req, res) => {
     if (!currentPassword || !newPassword) {
         return res.status(400).json({ error: "Current and new password are required." });
     }
-    if (newPassword.length < 8) {
-        return res.status(400).json({ error: "New password must be at least 8 characters." });
+    if (!isValidPassword(newPassword)) {
+        return res.status(400).json({ error: `New password must be ${LIMITS.password.min}-${LIMITS.password.max} characters.` });
     }
 
     try {
@@ -277,7 +307,7 @@ router.put('/volunteers/:id/reject', async (req, res) => {
     }
 });
 
-// 7. REMOVE A VOLUNTEER  (hard delete — unchanged, see note below)
+// 7. REMOVE A VOLUNTEER  (hard delete — unchanged)
 router.delete('/volunteers/:id', async (req, res) => {
     const { adminId, adminName } = req.query;
 
@@ -303,7 +333,7 @@ router.delete('/volunteers/:id', async (req, res) => {
 
 // 8. FIND ACCOUNT BY EMAIL (Step 1 of password recovery)
 router.post('/recovery/find', async (req, res) => {
-    const { email } = req.body;
+    const email = normalizeEmail(req.body.email);
     try {
         const [volunteer] = await db.query('SELECT security_question FROM volunteers WHERE email = ?', [email]);
         if (volunteer.length === 0) {
@@ -318,7 +348,8 @@ router.post('/recovery/find', async (req, res) => {
 
 // 9. VERIFY SECURITY ANSWER (Step 2 of password recovery)
 router.post('/recovery/verify', async (req, res) => {
-    const { email, answer } = req.body;
+    const { answer } = req.body;
+    const email = normalizeEmail(req.body.email);
     try {
         const [volunteer] = await db.query('SELECT security_answer FROM volunteers WHERE email = ?', [email]);
         const [admin] = await db.query('SELECT security_answer FROM admins WHERE email = ?', [email]);
@@ -343,10 +374,11 @@ router.post('/recovery/verify', async (req, res) => {
 
 // 10. RESET PASSWORD (Step 3 of password recovery)
 router.post('/recovery/reset', async (req, res) => {
-    const { email, answer, newPassword } = req.body;
+    const { answer, newPassword } = req.body;
+    const email = normalizeEmail(req.body.email);
 
-    if (!newPassword || newPassword.length < 8) {
-        return res.status(400).json({ error: "New password must be at least 8 characters." });
+    if (!isValidPassword(newPassword)) {
+        return res.status(400).json({ error: `New password must be ${LIMITS.password.min}-${LIMITS.password.max} characters.` });
     }
 
     try {
