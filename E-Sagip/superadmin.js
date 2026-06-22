@@ -246,10 +246,13 @@ function renderSaAdmins() {
             </svg>
           </div>
           <div class="ad-meta">
-            <div class="admin-name">${a.name}</div>
-            <div class="admin-email">${a.email}</div>
-            <span class="role-badge">admin</span>
-          </div>
+  <div class="admin-name">${a.name}</div>
+  <div class="admin-email">${a.email}</div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span class="role-badge">admin</span>
+    <span class="online-dot ${a.is_online ? 'online' : 'offline'}" title="${a.is_online ? 'Online' : 'Offline'}"></span>
+  </div>
+</div>
         </div>
         <hr class="ad-divider">
         <div class="ad-btn">
