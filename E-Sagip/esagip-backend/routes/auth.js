@@ -612,5 +612,39 @@ router.delete('/trash/:accountType/:id', async (req, res) => {
         res.status(500).json({ error: "Could not permanently delete item." });
     }
 });
+// HEARTBEAT — called every 30s from the frontend to mark user as online
+router.post('/heartbeat', async (req, res) => {
+    const { userId, userType } = req.body;
+    if (!userId || !userType) return res.status(400).json({ error: 'Missing userId or userType.' });
 
+    const table = userType === 'admin' ? 'admins' : 'volunteers';
+    try {
+        await db.query(
+            `UPDATE ${table} SET is_online = 1, last_seen = NOW() WHERE id = ?`,
+            [userId]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Heartbeat error:', err);
+        res.status(500).json({ error: 'Heartbeat failed.' });
+    }
+});
+
+// OFFLINE — called on logout or page unload
+router.post('/offline', async (req, res) => {
+    const { userId, userType } = req.body;
+    if (!userId || !userType) return res.status(400).json({ error: 'Missing userId or userType.' });
+
+    const table = userType === 'admin' ? 'admins' : 'volunteers';
+    try {
+        await db.query(
+            `UPDATE ${table} SET is_online = 0, last_seen = NOW() WHERE id = ?`,
+            [userId]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Offline error:', err);
+        res.status(500).json({ error: 'Could not mark offline.' });
+    }
+});
 module.exports = router;
