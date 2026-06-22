@@ -336,5 +336,15 @@ router.post('/recovery/reset', async (req, res) => {
         res.status(500).json({ error: "Server error during password reset." });
     }
 });
-
+router.get('/admins', async (req, res) => {
+    try {
+        const [admins] = await db.query(
+            'SELECT id, name, email, role, created_at FROM admins ORDER BY created_at DESC'
+        );
+        res.json(admins);
+    } catch (err) {
+        console.error('Failed to fetch admins:', err);
+        res.status(500).json({ error: 'Could not fetch admins.' });
+    }
+});
 module.exports = router;
