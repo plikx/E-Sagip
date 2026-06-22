@@ -253,6 +253,6 @@ router.patch('/:id/complete', async (req, res) => {
         console.error('Complete operation error:', err);
         res.status(500).json({ error: "Could not mark operation as complete." });
     }
-});
+});//
 
 module.exports = router;
