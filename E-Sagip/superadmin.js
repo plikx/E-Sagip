@@ -147,8 +147,12 @@ function renderSaVolunteers() {
             <div class="avatar">${v.initials}</div>
             <div>
               <div class="vol-name-row">
-                <span class="vol-name">${v.name} <span class="vol-badge ${v.status}">${v.status}</span></span>
-              </div>
+  <span class="vol-name">
+    ${v.name}
+    <span class="vol-badge ${v.status}">${v.status}</span>
+    <span class="online-dot ${v.is_online ? 'online' : 'offline'}" title="${v.is_online ? 'Online' : 'Offline'}"></span>
+  </span>
+</div>
               <div class="vol-meta">${v.location} · ${v.phone}</div>
               <div class="vol-skills">
                 ${v.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join("")}
