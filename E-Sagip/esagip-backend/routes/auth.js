@@ -436,8 +436,18 @@ router.post('/recovery/reset', async (req, res) => {
 // 11. FETCH ALL ADMINS  (excludes soft-deleted — they only appear in Trash)
 router.get('/admins', async (req, res) => {
     try {
+        // Auto-mark anyone not seen in 2 minutes as offline
+        await db.query(
+            `UPDATE admins SET is_online = 0 
+             WHERE is_online = 1 AND last_seen < (NOW() - INTERVAL 2 MINUTE)`
+        );
+        await db.query(
+            `UPDATE volunteers SET is_online = 0 
+             WHERE is_online = 1 AND last_seen < (NOW() - INTERVAL 2 MINUTE)`
+        );
+
         const [admins] = await db.query(
-            'SELECT id, name, email, role, created_at FROM admins WHERE deleted_at IS NULL ORDER BY created_at DESC'
+            'SELECT id, name, email, role, is_online, last_seen, created_at FROM admins ORDER BY created_at DESC'
         );
         res.json(admins);
     } catch (err) {
