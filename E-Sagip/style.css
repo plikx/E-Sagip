@@ -2932,3 +2932,15 @@ body {
   gap: 4px;
   margin-top: 4px;
 }
+.online-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.online-dot.online  { background: #27ae60; box-shadow: 0 0 0 2px #d5f5e3; }
+.online-dot.offline { background: #bdc3c7; box-shadow: 0 0 0 2px #f0f0f0; }
