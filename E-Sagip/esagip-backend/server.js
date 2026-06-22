@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const operationRoutes = require('./routes/operations');
 const auditRoutes = require('./routes/audit');
-const { startTrashCleanupJob } = require('./utils/trashCleanup');   // ← ADDED
+  // ← ADDED
 dotenv.config();
 const app = express();
 app.use(cors());
@@ -20,5 +20,5 @@ app.use('/api/audit', auditRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`E-Sagip Backend Bridge online on port ${PORT}`);
-    startTrashCleanupJob();          // ← ADDED
+    
 });
