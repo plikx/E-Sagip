@@ -92,13 +92,14 @@ router.post('/register', async (req, res) => {
 });
 
 // 2. SIGN IN ENDPOINT (Works for both Volunteers and Admins)
+// NOTE: soft-deleted accounts are excluded so they can't log in while in the trash.
 router.post('/login', async (req, res) => {
     const { password, role } = req.body;
     const email = normalizeEmail(req.body.email);
 
     try {
         if (role === 'admin') {
-            const [admin] = await db.query('SELECT * FROM admins WHERE email = ?', [email]);
+            const [admin] = await db.query('SELECT * FROM admins WHERE email = ? AND deleted_at IS NULL', [email]);
             if (admin.length === 0) return res.status(401).json({ error: "Invalid admin credentials." });
 
             const valid = await bcrypt.compare(password, admin[0].password_hash);
@@ -112,7 +113,7 @@ router.post('/login', async (req, res) => {
                 passwordExpired
             });
         } else {
-            const [volunteer] = await db.query('SELECT * FROM volunteers WHERE email = ?', [email]);
+            const [volunteer] = await db.query('SELECT * FROM volunteers WHERE email = ? AND deleted_at IS NULL', [email]);
             if (volunteer.length === 0) return res.status(401).json({ error: "Invalid credentials." });
 
             const valid = await bcrypt.compare(password, volunteer[0].password_hash);
@@ -195,6 +196,7 @@ router.put('/change-password', async (req, res) => {
 });
 
 // 4. FETCH ALL VOLUNTEERS WITH THEIR RESPECTIVE SKILLS (for Admin Dashboard)
+// NOTE: excludes soft-deleted volunteers — they only appear in the Trash view.
 router.get('/volunteers', async (req, res) => {
     try {
         const [volunteers] = await db.query(`
@@ -210,6 +212,7 @@ router.get('/volunteers', async (req, res) => {
             FROM volunteers v
             LEFT JOIN volunteer_skills vs ON v.id = vs.volunteer_id
             LEFT JOIN skills s ON vs.skill_id = s.id
+            WHERE v.deleted_at IS NULL
             GROUP BY v.id
         `);
 
@@ -236,7 +239,7 @@ router.put('/volunteers/:id/approve', async (req, res) => {
             return res.status(403).json({ error: "Invalid or unrecognized admin account." });
         }
 
-        const [volRows] = await db.query('SELECT first_name, last_name, status FROM volunteers WHERE id = ?', [volunteerId]);
+        const [volRows] = await db.query('SELECT first_name, last_name, status FROM volunteers WHERE id = ? AND deleted_at IS NULL', [volunteerId]);
         if (volRows.length === 0) {
             return res.status(404).json({ error: "Volunteer not found." });
         }
@@ -277,7 +280,7 @@ router.put('/volunteers/:id/reject', async (req, res) => {
             return res.status(403).json({ error: "Invalid or unrecognized admin account." });
         }
 
-        const [volRows] = await db.query('SELECT first_name, last_name, status FROM volunteers WHERE id = ?', [volunteerId]);
+        const [volRows] = await db.query('SELECT first_name, last_name, status FROM volunteers WHERE id = ? AND deleted_at IS NULL', [volunteerId]);
         if (volRows.length === 0) {
             return res.status(404).json({ error: "Volunteer not found." });
         }
@@ -307,21 +310,26 @@ router.put('/volunteers/:id/reject', async (req, res) => {
     }
 });
 
-// 7. REMOVE A VOLUNTEER  (hard delete — unchanged)
+// 7. REMOVE A VOLUNTEER  (SOFT DELETE — moves to Trash, recoverable for 90 days)
 router.delete('/volunteers/:id', async (req, res) => {
     const { adminId, adminName } = req.query;
+    const volunteerId = req.params.id;
 
     try {
-        const [volRows] = await db.query('SELECT first_name, last_name FROM volunteers WHERE id = ?', [req.params.id]);
-        const volunteerName = volRows[0] ? `${volRows[0].first_name} ${volRows[0].last_name}` : `Volunteer #${req.params.id}`;
+        const [volRows] = await db.query('SELECT first_name, last_name FROM volunteers WHERE id = ? AND deleted_at IS NULL', [volunteerId]);
+        if (volRows.length === 0) {
+            return res.status(404).json({ error: "Volunteer not found or already removed." });
+        }
+        const volunteerName = `${volRows[0].first_name} ${volRows[0].last_name}`;
 
-        await db.query('DELETE FROM volunteers WHERE id = ?', [req.params.id]);
+        await db.query('UPDATE volunteers SET deleted_at = NOW() WHERE id = ?', [volunteerId]);
 
         await logAction({
             adminId: adminId || null,
             adminName: adminName || 'Admin',
             action: 'REMOVE_VOLUNTEER',
-            target: volunteerName
+            target: volunteerName,
+            details: 'Moved to Trash (recoverable for 90 days)'
         });
 
         res.json({ success: true });
@@ -335,7 +343,7 @@ router.delete('/volunteers/:id', async (req, res) => {
 router.post('/recovery/find', async (req, res) => {
     const email = normalizeEmail(req.body.email);
     try {
-        const [volunteer] = await db.query('SELECT security_question FROM volunteers WHERE email = ?', [email]);
+        const [volunteer] = await db.query('SELECT security_question FROM volunteers WHERE email = ? AND deleted_at IS NULL', [email]);
         if (volunteer.length === 0) {
             return res.status(404).json({ error: "No account found with that email address." });
         }
@@ -351,8 +359,8 @@ router.post('/recovery/verify', async (req, res) => {
     const { answer } = req.body;
     const email = normalizeEmail(req.body.email);
     try {
-        const [volunteer] = await db.query('SELECT security_answer FROM volunteers WHERE email = ?', [email]);
-        const [admin] = await db.query('SELECT security_answer FROM admins WHERE email = ?', [email]);
+        const [volunteer] = await db.query('SELECT security_answer FROM volunteers WHERE email = ? AND deleted_at IS NULL', [email]);
+        const [admin] = await db.query('SELECT security_answer FROM admins WHERE email = ? AND deleted_at IS NULL', [email]);
 
         const record = volunteer.length > 0 ? volunteer[0] : (admin.length > 0 ? admin[0] : null);
 
@@ -382,7 +390,7 @@ router.post('/recovery/reset', async (req, res) => {
     }
 
     try {
-        const [volunteer] = await db.query('SELECT * FROM volunteers WHERE email = ?', [email]);
+        const [volunteer] = await db.query('SELECT * FROM volunteers WHERE email = ? AND deleted_at IS NULL', [email]);
 
         if (volunteer.length === 0) {
             return res.status(404).json({ error: "Account not found." });
@@ -425,15 +433,183 @@ router.post('/recovery/reset', async (req, res) => {
     }
 });
 
+// 11. FETCH ALL ADMINS  (excludes soft-deleted — they only appear in Trash)
 router.get('/admins', async (req, res) => {
     try {
         const [admins] = await db.query(
-            'SELECT id, name, email, role, created_at FROM admins ORDER BY created_at DESC'
+            'SELECT id, name, email, role, created_at FROM admins WHERE deleted_at IS NULL ORDER BY created_at DESC'
         );
         res.json(admins);
     } catch (err) {
         console.error('Failed to fetch admins:', err);
         res.status(500).json({ error: 'Could not fetch admins.' });
+    }
+});
+
+// 12. REMOVE AN ADMIN  (SOFT DELETE — moves to Trash, recoverable for 90 days)
+router.delete('/admins/:id', async (req, res) => {
+    const { adminId, adminName } = req.query;
+    const targetAdminId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT name FROM admins WHERE id = ? AND deleted_at IS NULL', [targetAdminId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Admin not found or already removed." });
+        }
+        const targetName = rows[0].name;
+
+        await db.query('UPDATE admins SET deleted_at = NOW() WHERE id = ?', [targetAdminId]);
+
+        await logAction({
+            adminId: adminId || null,
+            adminName: adminName || 'Admin',
+            action: 'DELETE_ADMIN',
+            target: targetName,
+            details: 'Moved to Trash (recoverable for 90 days)'
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not remove admin." });
+    }
+});
+
+// 13. TRASH — list all soft-deleted volunteers AND admins together
+router.get('/trash', async (req, res) => {
+    try {
+        const [deletedVolunteers] = await db.query(`
+            SELECT id, first_name, last_name, email, deleted_at,
+                   'volunteer' AS accountType
+            FROM volunteers
+            WHERE deleted_at IS NOT NULL
+            ORDER BY deleted_at DESC
+        `);
+
+        const [deletedAdmins] = await db.query(`
+            SELECT id, name, email, deleted_at,
+                   'admin' AS accountType
+            FROM admins
+            WHERE deleted_at IS NOT NULL
+            ORDER BY deleted_at DESC
+        `);
+
+        // Normalize both into a single consistent shape for the frontend
+        const trashItems = [
+            ...deletedVolunteers.map(v => ({
+                id: v.id,
+                accountType: 'volunteer',
+                name: `${v.first_name} ${v.last_name}`,
+                email: v.email,
+                deletedAt: v.deleted_at
+            })),
+            ...deletedAdmins.map(a => ({
+                id: a.id,
+                accountType: 'admin',
+                name: a.name,
+                email: a.email,
+                deletedAt: a.deleted_at
+            }))
+        ].sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+
+        res.json(trashItems);
+    } catch (err) {
+        console.error('Failed to fetch trash:', err);
+        res.status(500).json({ error: 'Could not fetch trash.' });
+    }
+});
+
+// 14. RESTORE A VOLUNTEER FROM TRASH
+router.put('/volunteers/:id/restore', async (req, res) => {
+    const { adminId, adminName } = req.body;
+    const volunteerId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT first_name, last_name FROM volunteers WHERE id = ? AND deleted_at IS NOT NULL', [volunteerId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "This volunteer is not in the trash." });
+        }
+        const volunteerName = `${rows[0].first_name} ${rows[0].last_name}`;
+
+        await db.query('UPDATE volunteers SET deleted_at = NULL WHERE id = ?', [volunteerId]);
+
+        await logAction({
+            adminId: adminId || null,
+            adminName: adminName || 'Admin',
+            action: 'RESTORE_VOLUNTEER',
+            target: volunteerName
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not restore volunteer." });
+    }
+});
+
+// 15. RESTORE AN ADMIN FROM TRASH
+router.put('/admins/:id/restore', async (req, res) => {
+    const { adminId, adminName } = req.body;
+    const targetAdminId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT name FROM admins WHERE id = ? AND deleted_at IS NOT NULL', [targetAdminId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "This admin is not in the trash." });
+        }
+        const targetName = rows[0].name;
+
+        await db.query('UPDATE admins SET deleted_at = NULL WHERE id = ?', [targetAdminId]);
+
+        await logAction({
+            adminId: adminId || null,
+            adminName: adminName || 'Admin',
+            action: 'RESTORE_ADMIN',
+            target: targetName
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not restore admin." });
+    }
+});
+
+// 16. PERMANENTLY DELETE FROM TRASH (manual purge, bypasses the 90-day wait)
+router.delete('/trash/:accountType/:id', async (req, res) => {
+    const { accountType, id } = req.params;
+    const { adminId, adminName } = req.query;
+
+    if (!['volunteer', 'admin'].includes(accountType)) {
+        return res.status(400).json({ error: "Invalid account type." });
+    }
+
+    try {
+        const table = accountType === 'admin' ? 'admins' : 'volunteers';
+        const nameQuery = accountType === 'admin'
+            ? 'SELECT name FROM admins WHERE id = ? AND deleted_at IS NOT NULL'
+            : 'SELECT first_name, last_name FROM volunteers WHERE id = ? AND deleted_at IS NOT NULL';
+
+        const [rows] = await db.query(nameQuery, [id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Item not found in trash." });
+        }
+        const targetName = accountType === 'admin' ? rows[0].name : `${rows[0].first_name} ${rows[0].last_name}`;
+
+        await db.query(`DELETE FROM ${table} WHERE id = ? AND deleted_at IS NOT NULL`, [id]);
+
+        await logAction({
+            adminId: adminId || null,
+            adminName: adminName || 'Admin',
+            action: accountType === 'admin' ? 'PURGE_ADMIN' : 'PURGE_VOLUNTEER',
+            target: targetName,
+            details: 'Permanently deleted from Trash'
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not permanently delete item." });
     }
 });
 
