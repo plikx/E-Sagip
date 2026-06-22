@@ -624,7 +624,7 @@ router.delete('/trash/:accountType/:id', async (req, res) => {
     }
 });
 // HEARTBEAT — called every 30s from the frontend to mark user as online
-router.post('/heartbeat', async (req, res) => {
+router.post('/ping', async (req, res) => {
     const { userId, userType } = req.body;
     if (!userId || !userType) return res.status(400).json({ error: 'Missing userId or userType.' });
 
@@ -642,7 +642,7 @@ router.post('/heartbeat', async (req, res) => {
 });
 
 // OFFLINE — called on logout or page unload
-router.post('/offline', async (req, res) => {
+router.post('/status',  async (req, res) => {
     const { userId, userType } = req.body;
     if (!userId || !userType) return res.status(400).json({ error: 'Missing userId or userType.' });
 
